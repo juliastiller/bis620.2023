@@ -1,9 +1,9 @@
 Package: bis620.2023
 Type: Package
-Title: Homework 3 for the BIS620 (2023) Class
+Title: Functions & Data for BIS620 (2023) Homework 3
 Version: 0.1.0
-Author: Julia Stiller and Anmol Seth
-Maintainer: The package maintainer <julia.stiller@yale.ediu>
+Author: Julia Stiller and Anmol Seth (Group #4)
+Maintainer: The package maintainer <julia.stiller@yale.edu>
 Description: Functions implemented in previous homework for class.
 License: GPL (>= 2)
 Encoding: UTF-8
@@ -15,7 +15,10 @@ Imports:
   dplyr,
   ggplot2,
   purrr,
-  tidyr
+  tidyr, 
+  duckdb,
+  DBI,
+  DT
 Suggests: 
     knitr,
     rmarkdown,
@@ -26,3 +29,6 @@ Config/testthat/edition: 3
 Depends: 
     R (>= 2.10)
 VignetteBuilder: knitr
+Collate:
+  'R/app.R'
+  'inst/shiny/run_shiny_app.R'
