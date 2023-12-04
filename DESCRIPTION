@@ -30,5 +30,5 @@ Depends:
     R (>= 2.10)
 VignetteBuilder: knitr
 Collate:
-  'R/app.R'
-  'inst/shiny/run_shiny_app.R'
+  'app.R'
+  'run_shiny_app.R'
