@@ -30,6 +30,6 @@ Depends:
     R (>= 2.10)
 VignetteBuilder: knitr
 Collate:
-  'files_to_test/app.R'
-  'files_to_test/ct-util.R'
-  'files_to_test/run_shiny_app.R'
+  '/files_to_test/app.R'
+  '/files_to_test/ct-util.R'
+  '/files_to_test/run_shiny_app.R'
