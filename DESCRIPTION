@@ -20,7 +20,9 @@ Imports:
   duckdb,
   DBI,
   DT,
-  usethis
+  usethis,
+  htmltools (>= 0.5.7),
+  scales
 Suggests: 
     knitr,
     rmarkdown,

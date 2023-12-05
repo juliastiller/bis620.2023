@@ -5,6 +5,7 @@
 #'
 #' @import shiny
 #' @importFrom utils data
+#' @importFrom tidyr pivot_longer
 #' @export
 
 run_shiny_app <- function() {

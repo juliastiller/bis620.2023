@@ -7,9 +7,9 @@
 #' @param d A tibble containing information about studies, including `start_date` and `completion_date`.
 #' @return A tibble with a `date` column and a `count` column representing the number of concurrent trials.
 #'
-#' @importFrom dplyr pivot_longer select distinct arrange na.omit rename
-#' @importFrom data.table na.omit
+#' @importFrom dplyr select distinct arrange rename
 #' @importFrom purrr map_dbl
+#' @importFrom tidyr pivot_longer
 #'
 #' @details
 #' The function works by first extracting all unique dates from the input dataset (`d`). It then
