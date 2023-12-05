@@ -1,5 +1,5 @@
 library(testthat)
-source("ct-util.R")
+# source("ct-util.R")
 
 test_that("Phase plot is generated correctly", {
   # Create a sample dataset for testing
