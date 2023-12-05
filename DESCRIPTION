@@ -19,7 +19,8 @@ Imports:
   tidyr, 
   duckdb,
   DBI,
-  DT
+  DT,
+  usethis
 Suggests: 
     knitr,
     rmarkdown,
