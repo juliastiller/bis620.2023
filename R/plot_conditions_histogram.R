@@ -11,7 +11,7 @@
 #' @return A histogram showing the distribution of conditions in the trials.
 #'
 #' @importFrom dplyr group_by summarize arrange
-#' @importFrom ggplot2 ggplot aes geom_col labs scale_x_discrete scale_y_log10 theme_minimal element_text
+#' @importFrom ggplot2 ggplot aes geom_col labs scale_x_discrete scale_y_log10 theme_minimal element_text theme xlab ylab
 #' @importFrom scales wrap_format
 #'
 #' @seealso \code{\link{get_concurrent_trials}}

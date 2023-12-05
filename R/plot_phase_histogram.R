@@ -8,7 +8,7 @@
 #'
 #' @return A histogram showing the distribution of phases in the trials.
 #'
-#' @importFrom ggplot2 ggplot aes geom_col labs scale_x_discrete theme_minimal element_text
+#' @importFrom ggplot2 ggplot aes geom_col labs scale_x_discrete theme_minimal element_text theme xlab ylab
 #' @importFrom scales wrap_format
 #'
 #' @export

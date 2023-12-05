@@ -17,11 +17,6 @@ Imports:
   ggplot2,
   purrr,
   tidyr, 
-  duckdb,
-  DBI,
-  DT,
-  usethis,
-  htmltools (>= 0.5.7),
   scales
 Suggests: 
     knitr,

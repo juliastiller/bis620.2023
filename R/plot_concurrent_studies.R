@@ -10,7 +10,7 @@
 #' @return A line plot showing the trend of concurrent trials over time.
 #'
 #' @importFrom dplyr select
-#' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal element_text
+#' @importFrom ggplot2 ggplot aes geom_line labs theme_minimal element_text theme xlab ylab
 #'
 #' @seealso \code{\link{get_concurrent_trials}}
 #'

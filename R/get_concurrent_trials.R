@@ -10,6 +10,8 @@
 #' @importFrom dplyr select distinct arrange rename
 #' @importFrom purrr map_dbl
 #' @importFrom tidyr pivot_longer
+#' @importFrom stats na.omit
+#' @importFrom tidyr everything
 #'
 #' @details
 #' The function works by first extracting all unique dates from the input dataset (`d`). It then

@@ -8,7 +8,7 @@
 #'
 #' @return A histogram showing the distribution of intervention types in the trials.
 #'
-#' @importFrom ggplot2 ggplot aes geom_bar labs theme_minimal element_text
+#' @importFrom ggplot2 ggplot aes geom_bar labs theme_minimal element_text theme xlab ylab
 #'
 #' @export
 plot_interventions_histogram = function(data) {
