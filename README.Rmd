@@ -30,3 +30,8 @@ You can install the development version of bis620.2023 from [GitHub](https://git
 # install.packages("devtools")
 devtools::install_github("juliastiller/bis620.2023")
 ```
+
+```{r}
+library(covr)
+print(package_coverage())
+```
