@@ -17,7 +17,8 @@ Imports:
   ggplot2,
   purrr,
   tidyr, 
-  scales
+  scales,
+  covr
 Suggests: 
     knitr,
     rmarkdown,
