@@ -4,8 +4,12 @@
 #' @returns No return.
 #'
 #' @import shiny
+#' @importFrom dplyr left_join
+#' @importFrom ggplot2 ggplot aes geom_col labs scale_x_discrete theme_minimal element_text theme xlab ylab
 #' @importFrom utils data
 #' @importFrom tidyr pivot_longer
+
+#' @importFrom scales wrap_format
 #' @export
 
 run_shiny_app <- function() {
