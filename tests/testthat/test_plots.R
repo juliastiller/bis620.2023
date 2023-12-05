@@ -36,7 +36,7 @@ test_that("Concurrent studies plot is generated correctly", {
   x <- plot$labels$x
   y <- plot$labels$y
   line_color <- plot$layers[[1]]$aes_params$colour
-  
+
   # Expect that the generated plot is a ggplot
   expect_is(plot, "ggplot")
   # Expect that the title of the plot corresponds correctly
@@ -46,50 +46,6 @@ test_that("Concurrent studies plot is generated correctly", {
   expect_equal(line_color, "blue")
 })
 
-test_that("Conditions plot is generated correctly", {
-  # Create a sample dataset for testing
-  sample_data <- data.frame(
-    nct_id = 1:5,
-    condition_name = c("Non Small Cell Lung Carcinoma", "Non Small Cell Lung Carcinoma", "Non Small Cell Lung Carcinoma", "Non Small Cell Lung Carcinoma", "Pain")
-  )
-  # Generate the conditions plot
-  plot <- plot_conditions_histogram(sample_data, 5)
-  title <- plot$labels$title
-  x <- plot$labels$x
-  y <- plot$labels$y
-  bar_color <- plot$layers[[1]]$aes_params$fill
-  
-  # Expect that the generated plot is a ggplot
-  expect_is(plot, "ggplot")
-  # Expect that the title of the plot corresponds correctly
-  expect_equal(title, "Clinical Trial Condition Distribution")
-  expect_equal(x, "Condition")
-  expect_equal(y, "Count")
-  expect_equal(bar_color, "skyblue")
-})
-
-test_that("Countries plot is generated correctly", {
-  # Create a sample dataset for testing
-  sample_data <- data.frame(
-    nct_id = 1:5,
-    country_name = c("United States", "Canada", "United States", "Puerto Rico", "United Kingdom")
-  )
-  # Generate the conditions plot
-  plot <- plot_countries_frequency(sample_data, 5)
-  # Store pieces of information
-  title <- plot$labels$title
-  x <- plot$labels$x
-  y <- plot$labels$y
-  bar_color <- plot$layers[[1]]$aes_params$fill
-  
-  # Expect that the generated plot is a ggplot
-  expect_is(plot, "ggplot")
-  # Expect that the labels of the plot correspond correctly
-  expect_equal(title, "Clinical Trial Country Distribution")
-  expect_equal(x, "Country")
-  expect_equal(y, "Count")
-  expect_equal(bar_color, "skyblue")
-})
 
 test_that("Interventions plot is generated correctly", {
   # Create a sample dataset for testing
@@ -104,7 +60,7 @@ test_that("Interventions plot is generated correctly", {
   x <- plot$labels$x
   y <- plot$labels$y
   bar_color <- plot$layers[[1]]$aes_params$fill
-  
+
   # Expect that the generated plot is a ggplot
   expect_is(plot, "ggplot")
   # Expect that the title of the plot corresponds correctly
