@@ -43,6 +43,6 @@ importFrom(stats,na.omit)
 importFrom(tidyr,everything)
 importFrom(tidyr,pivot_longer)
 importFrom(utils,data)
-
+importFrom(utils,head)
 importFrom(dplyr, left_join, collect)
 importFrom(tidyr, %>%)
