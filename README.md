@@ -6,6 +6,8 @@
 <!-- badges: start -->
 
 [![R-CMD-check](https://github.com/juliastiller/bis620.2023/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/juliastiller/bis620.2023/actions/workflows/R-CMD-check.yaml)
+[![R Package
+Test](https://github.com/juliastiller/bis620.2023/actions/workflows/r-test.yaml/badge.svg)](https://github.com/juliastiller/bis620.2023/actions/workflows/r-test.yaml)
 [![test-coverage](https://github.com/juliastiller/bis620.2023/actions/workflows/test-coverage.yaml/badge.svg)](https://github.com/juliastiller/bis620.2023/actions/workflows/test-coverage.yaml)
 <!-- badges: end -->
 
@@ -17,6 +19,8 @@ clinicians, and data scientists, offering seamless retrieval and dynamic
 visualization capabilities. Users can gain valuable insights by
 exploring trends across different dimensions, including phase,
 concurrency, condition, country, and intervention.
+
+<https://app.codecov.io/gh/juliastiller/bis620.2023>
 
 ## Installation
 

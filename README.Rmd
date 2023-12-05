@@ -23,6 +23,8 @@ knitr::opts_chunk$set(
 
 The goal of bis620.2023 is to empower users to explore clinical trial data with ease. Through filtering options such as keywords, sponsors, status, and FDA regulation, users can efficiently extract information via the ClinicalTrials.gov API. This package caters to researchers, clinicians, and data scientists, offering seamless retrieval and dynamic visualization capabilities. Users can gain valuable insights by exploring trends across different dimensions, including phase, concurrency, condition, country, and intervention.
 
+[https://app.codecov.io/gh/juliastiller/bis620.2023](https://app.codecov.io/gh/juliastiller/bis620.2023)
+
 ## Installation
 
 You can install the development version of bis620.2023 from [GitHub](https://github.com/) with:
