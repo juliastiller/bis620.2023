@@ -358,21 +358,21 @@ run_shiny_app <- function() {
 
       # 4. Filter data by FDA Regulated Drug
       if ("TRUE" %in% input$is_fda_filter) {
-        ret <- ret %>%
+        ret <- ret |>
           filter(is_fda_regulated_drug == TRUE)
       }
       if ("FALSE" %in% input$is_fda_filter) {
-        ret <- ret %>%
+        ret <- ret |>
           filter(is_fda_regulated_drug == FALSE)
       }
 
       # 5. Filter data by FDA Regulated Device
       if ("TRUE" %in% input$is_fda_device_filter) {
-        ret <- ret %>%
+        ret <- ret |>
           filter(is_fda_regulated_device == TRUE)
       }
       if ("FALSE" %in% input$is_fda_device_filter) {
-        ret <- ret %>%
+        ret <- ret |>
           filter(is_fda_regulated_device == FALSE)
       }
 
@@ -381,8 +381,8 @@ run_shiny_app <- function() {
         left_join(conditions |> rename(condition_name = name), by = "nct_id")
 
       # We will not include countries that have been removed
-      filtered_countries <- countries %>%
-        filter(!removed) %>%
+      filtered_countries <- countries |>
+        filter(!removed) |>
         rename(country_name = name)
 
       # LEFT JOIN filtered countries data into the studies data based on nct_id
