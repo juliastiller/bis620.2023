@@ -16,11 +16,6 @@ jobs:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Debug
-        run: |
-        echo "Working Directory: $PWD"
-        echo "Contents of the directory: $(ls -la)"
-        
       - uses: actions/checkout@v3
 
       - uses: r-lib/actions/setup-r@v2
