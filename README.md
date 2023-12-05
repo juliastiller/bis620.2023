@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![R-CMD-check](https://github.com/juliastiller/bis620.2023/actions/workflows/r-test.yml/badge.svg)](https://github.com/juliastiller/bis620.2023/actions/workflows/r-test.yml)
+[![R-CMD-check](https://github.com/juliastiller/bis620.2023/actions/workflows/r-test.yaml/badge.svg)](https://github.com/juliastiller/bis620.2023/actions/workflows/r-test.yaml)
 <!-- badges: end -->
 
 The goal of bis620.2023 is to …
