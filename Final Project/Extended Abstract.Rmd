@@ -4,3 +4,67 @@ author: "Anmol Seth - anmol.seth@yale.edu"
 date: "2023-12-19"
 output: html_document
 ---
+---
+title: "Analysis of Panitumumab Randomized Trial - Background and Motivation"
+output: 
+  html_document:
+    theme: united
+---
+
+# Background and Motivation
+
+## Introduction
+
+The Panitumumab Randomized trial In combination with chemotherapy for Metastatic colorectal cancer to determine Efficacy (PRIME) is a pivotal study in the field of oncology. Conducted by Douillard et al. in 2014, the study focused on evaluating the efficacy of panitumumab-FOLFOX4 compared to FOLFOX4 alone as first-line treatment for wild-type (WT) KRAS metastatic colorectal cancer (mCRC).
+
+## Significance of the PRIME Study
+
+The PRIME study demonstrated that panitumumab-FOLFOX4 significantly improved progression-free survival (PFS) compared to FOLFOX4 in patients with WT KRAS mCRC. This improvement in PFS, along with other key findings, suggests the potential of panitumumab as an effective treatment option for a specific subset of mCRC patients.
+
+## Context within Scientific Research
+
+Colorectal cancer remains a significant global health concern, and advancements in treatment strategies are crucial for improving patient outcomes. The PRIME study contributes valuable insights into the effectiveness of targeted therapies, emphasizing the importance of molecular profiling, such as KRAS testing, in treatment decision-making.
+
+## Implications for Healthcare
+
+The positive benefit-risk profile observed in the PRIME study raises important considerations for healthcare practitioners. Understanding the impact of panitumumab-FOLFOX4 on both progression-free survival and overall survival in WT KRAS mCRC patients is vital for informed clinical decision-making.
+
+## Research Gap Addressed
+
+The study addresses a notable research gap by providing evidence for the efficacy and safety of panitumumab-FOLFOX4 in previously untreated WT KRAS mCRC patients. This information is critical for identifying patients who would benefit the most from this treatment regimen.
+
+# Motivation for Analysis
+
+Given the significance of the PRIME study, our analysis aims to further explore and validate the findings. We seek to leverage statistical methods to gain a deeper understanding of the impact of panitumumab-FOLFOX4 on key clinical outcomes, thereby contributing to the broader knowledge base in oncology.
+
+# Research Question and Statistical Experiment
+
+## Research Question
+
+**"Does the presence of KRAS mutations significantly impact the survival outcomes of metastatic colorectal cancer patients receiving different treatment regimens, specifically Panitumumab in combination with FOLFOX and FOLFOX alone?"**
+
+## Statistical Experiment
+
+1. **Null Hypothesis (H0):** There is no significant difference in survival outcomes between patients with the "Mutant" and "Wild-type" KRAS genotypes, regardless of the treatment arm.
+
+2. **Alternative Hypothesis (H1):** There is a significant difference in survival outcomes between patients with the "Mutant" and "Wild-type" KRAS genotypes, and this difference is influenced by the treatment arm (Panitumumab + FOLFOX vs. FOLFOX alone).
+
+3. **Variables:**
+   - **Dependent Variable:** Time to death (Survival Time)
+   - **Independent Variable 1:** KRAS Genotype (Categorical: Mutant, Wild-type)
+   - **Independent Variable 2:** Treatment Arm (Categorical: Panitumumab + FOLFOX, FOLFOX alone)
+
+4. **Statistical Tests:**
+   - **Kaplan-Meier Survival Analysis:** To visualize and compare the survival curves for different genotypes and treatment arms.
+   - **Cox Proportional Hazards Model:** To quantify the hazard ratios and assess the impact of genotype and treatment on survival.
+
+5. **Significance Level (α):** Set a predetermined significance level (e.g., α = 0.05) to determine statistical significance.
+
+6. **Additional Analysis:**
+   - Perform subgroup analyses based on treatment arms to explore specific survival patterns within each group.
+   - Assess the impact of other relevant variables (if available) on survival outcomes.
+
+
+
+
+ 
