@@ -1,0 +1,545 @@
+---
+title: "BIS 620 Homework 2"
+author: Anmol Seth, anmol.seth@yale.edu
+format:
+  html:
+    self-contained: true
+---
+
+Please use the Panitumumab data we've been going over in class to complete the following questions ([NCT00364013](https://clinicaltrials.gov/ct2/show/NCT00364013?term=NCT00364013&draw=2&rank=1)). 
+
+- Note 1: You'll want to use the confirmed responses.
+- Note 2: You'll want to use ATRT (actual treatment)
+
+```{r Setup, message=FALSE, warning=FALSE}
+library(haven)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(survival)
+library(survminer)
+
+trial_path = file.path("..", "Final Project", "NCT00364013")
+trial_files = list.files(trial_path, pattern = "*_pds2019.sas7bdat")
+
+dl = map(file.path(trial_path, trial_files), ~ read_sas(.x))
+names(dl) = gsub("*_pds2019.sas7bdat", "", trial_files)
+
+adae = dl$adae #contains severity code 
+adsl = dl$adsl #contains ATRT (actual treatment)
+adrsp = dl$adrsp #contains confirmed responses
+biomark = dl$biomark #contains biomarkers
+```
+
+# Question 1
+
+A grade 4 toxicity in a clinical trial is an adverse event that is considered life threatening and generally results in taking a patient off of a medication. 
+
+- How many total grade 4 toxicities were recorded in the trial?
+- Who were the individuals experiencing grade 4 toxicities? In particular:
+    - How many people where there?
+    - What were their ages?
+    - What were their sexes?
+    - Were they on treatment or the standard of care?
+
+```{r}
+kable(as.data.frame(table(adae$AESEVCD)), 
+      caption = "Frequency Count of Severity Codes", 
+      col.names = c("Grade/Severity Code", "Frequency"))
+```
+
+```{r}
+filtered_adae <- adae %>% 
+  filter(AESEVCD == 4)
+
+cat("Total number of grade 4 toxicities recorded in the trial:", 
+    length(filtered_adae$SUBJID), "\n")
+```
+
+```{r}
+unique_subjid_count <- filtered_adae %>%
+  distinct(SUBJID) %>%
+  nrow()
+
+unique_subjid_entries <- filtered_adae %>%
+  distinct(SUBJID)
+
+cat("Number of unique entries in SUBJID:", unique_subjid_count, "\n")
+cat("Unique SUBJID entries:", unique_subjid_entries$SUBJID, "\n")
+```
+
+```{r}
+d = left_join(filtered_adae, adsl, by = "SUBJID")
+
+unique_subjid_entries <- d %>%
+  distinct(SUBJID)
+
+unique_subjid_info <- d %>%
+  filter(SUBJID %in% unique_subjid_entries$SUBJID) %>%
+  select(SUBJID, AGE, SEX, ATRT) %>%
+  distinct()
+
+kable(unique_subjid_info)
+```
+
+# Question 2
+
+In a phase 2 trial, a positive endpoint considered when a patients see partial or complete response and is measured per patient in the overall response variable. Responses are recorded multiple times. The best response is the most favorable over the course of treatment and can be "Complete Response", "Partial Response", "Stable Disease", and "Progressive Disease, with "Complete Response" being the best and "Progressive Disease" being the worst. 
+
+- Create a plot of the number of each type of best response, faceted by arm where "arm" is defined in terms of treatment only. 
+- How many patients have recorded values of "Complete Response" or "Partial Response" (positive outcome) per arm?
+- How many complete responses are confirmed?
+
+--- 
+
+Some thoughts before starting the analysis: 
+
+We're interested in the overall response variable `RSRESP`. It's worth noting the analysis outputs are very different if we look at the full adrsp table vs only confirmed responses. Confirmed responses only include partial or complete response, whereas the adrsp table includes many more responses as shown below. Based on OH with the professor, my final answer for this question is the plot that uses 'adrsp' and not 'confirmed_responses' but I am including both to demonstrate nuance and the stark differences between these two. 
+
+```{r}
+adrsp |> distinct(RSRESP) # <- Notes: use this one
+
+confirmed_responses <- adrsp |>
+  filter(RSCONFYN == "Y")
+confirmed_responses |> distinct(RSRESP) 
+```
+
+```{r}
+# Custom ranking based on the question's guidelines
+ranking <- c("Complete response", "Partial response", 
+             "Stable disease", "Progressive disease")
+
+results_df <- data.frame(SUBJID = character(0), 
+                         RSRESP = character(0), 
+                         RSCONFYN = character(0), 
+                         stringsAsFactors = FALSE)
+
+# Remove 'Unable to evaluate' and "" from the analysis
+filtered_data <- subset(confirmed_responses, 
+                        !(RSRESP == 'Unable to evaluate' | RSRESP == ''))
+
+# Iterate through unique SUBJIDs
+unique_subjids <- unique(filtered_data$SUBJID)
+for (subj_id in unique_subjids) {
+  subset_df <- filtered_data[filtered_data$SUBJID == subj_id, ]
+  
+  # Check if any RSRESP value matches the ranking
+  matching_values <- subset_df$RSRESP[subset_df$RSRESP %in% ranking]
+  
+  # Find the highest ranking value
+  if (ranking[1] %in% matching_values) {
+    highest_rank_value <- ranking[1]
+  } else if (ranking[2] %in% matching_values) {
+    highest_rank_value <- ranking[2]
+  } else if (ranking[3] %in% matching_values) {
+    highest_rank_value <- ranking[3]
+  } else if (ranking[4] %in% matching_values) {
+    highest_rank_value <- ranking[4]
+  }
+  
+  # Find the RSCONFYN value
+  if ('Y' %in% as.list(subset_df$RSCONFYN)) {
+    rsconfyn_value <- 'Y'
+  } else if ('N' %in% as.list(subset_df$RSCONFYN)) {
+    rsconfyn_value <- 'N'
+  } else{
+    rsconfyn_value <- ''
+  }
+  
+  results_df <- rbind(results_df, 
+                      data.frame(SUBJID = subj_id, 
+                                 RSRESP = highest_rank_value, 
+                                 RSCONFYN = rsconfyn_value, 
+                                 stringsAsFactors = FALSE))
+}
+
+d = inner_join(adsl[, c("SUBJID", "ATRT")], 
+               results_df, by = "SUBJID")
+```
+
+```{r, warning=FALSE, message=FALSE}
+count_data <- d %>%
+  group_by(RSRESP, ATRT) %>%
+  summarize(Count = n())
+
+# Create a bar plot of the number of each type of best response, faceted by arm
+response_plot <- ggplot(count_data, 
+                        aes(x = factor(RSRESP, 
+                                       levels = c("Complete response", 
+                                                  "Partial response", 
+                                                  "Stable disease", 
+                                                  "Progressive disease")), 
+                            y = Count, 
+                            fill = RSRESP)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ ATRT, scales = "free") +
+  labs(title = "Best Response by Arm - Confirmed Responses",
+       x = "Best Response",
+       y = "Count") +
+  theme_minimal() + 
+  geom_text(aes(label = Count), vjust = -0.5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(response_plot)
+```
+
+I am not showing the 'progressive disease' and 'stable disease' responses here since they are removed from the data set once we filter into 'complete responses'. It's worth noting that values for both of those are 0.
+
+```{r}
+positive_response_count <- d %>%
+  filter(RSRESP %in% c("Complete response", "Partial response")) %>%
+  group_by(ATRT) %>%
+  summarise(Patient_Count = n())
+
+kable(positive_response_count)
+```
+
+A more detailed breakdown of the data:
+```{r}
+kable(count_data)
+```
+
+Now let's see how this changes once we look at adrsp (all responses, not just confirmed responses).
+
+```{r}
+results_df <- data.frame(SUBJID = character(0), 
+                         RSRESP = character(0), 
+                         RSCONFYN = character(0), 
+                         stringsAsFactors = FALSE)
+
+# Remove 'Unable to evaluate' and "" from the analysis
+filtered_data <- subset(adrsp, #using all of the data as specified by the professor 
+                        !(RSRESP == 'Unable to evaluate' | RSRESP == ''))
+
+# Iterate through unique SUBJIDs
+unique_subjids <- unique(filtered_data$SUBJID)
+for (subj_id in unique_subjids) {
+  subset_df <- filtered_data[filtered_data$SUBJID == subj_id, ]
+  
+  # Check if any RSRESP value matches the ranking
+  matching_values <- subset_df$RSRESP[subset_df$RSRESP %in% ranking]
+  
+  # Find the highest ranking value
+  if (ranking[1] %in% matching_values) {
+    highest_rank_value <- ranking[1]
+  } else if (ranking[2] %in% matching_values) {
+    highest_rank_value <- ranking[2]
+  } else if (ranking[3] %in% matching_values) {
+    highest_rank_value <- ranking[3]
+  } else if (ranking[4] %in% matching_values) {
+    highest_rank_value <- ranking[4]
+  }
+  
+  # Find the RSCONFYN value
+  if ('Y' %in% as.list(subset_df$RSCONFYN)) {
+    rsconfyn_value <- 'Y'
+  } else if ('N' %in% as.list(subset_df$RSCONFYN)) {
+    rsconfyn_value <- 'N'
+  } else{
+    rsconfyn_value <- ''
+  }
+  
+  results_df <- rbind(results_df, 
+                      data.frame(SUBJID = subj_id, 
+                                 RSRESP = highest_rank_value, 
+                                 RSCONFYN = rsconfyn_value, 
+                                 stringsAsFactors = FALSE))
+}
+
+d = inner_join(adsl[, c("SUBJID", "ATRT")], 
+               results_df, by = "SUBJID")
+```
+
+```{r, warning=FALSE, message = FALSE}
+count_data <- d %>%
+  group_by(RSRESP, ATRT) %>%
+  summarize(Count = n())
+
+# Create a bar plot of the number of each type of best response, faceted by arm
+response_plot <- ggplot(count_data, 
+                        aes(x = factor(RSRESP, 
+                                       levels = c("Complete response",
+                                                  "Partial response",
+                                                  "Stable disease",
+                                                  "Progressive disease")), 
+                            y = Count, 
+                            fill = RSRESP)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~ ATRT, scales = "free") +
+  labs(title = "Best Response by Arm - All Data", 
+       x = "Best Response", 
+       y = "Count") +
+  theme_minimal() + 
+  geom_text(aes(label = Count), vjust = -0.5) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+print(response_plot)
+```
+
+```{r}
+positive_response_count <- d %>%
+  filter(RSRESP %in% c("Complete response", "Partial response")) %>%
+  group_by(ATRT) %>%
+  summarise(Patient_Count = n())
+
+# Print the result
+kable(positive_response_count)
+```
+
+A more detailed breakdown of the data:
+
+```{r}
+new_count_data <- count_data[count_data$RSRESP != "Progressive disease" &
+                               count_data$RSRESP != "Stable disease", ]
+
+kable(new_count_data)
+```
+
+
+```{r}
+complete_responses = adrsp |>
+  filter(RSRESP == 'Complete response')
+
+confirmed_responses = adrsp |>
+  filter(RSCONFYN == 'Y')
+
+# How many complete responses are confirmed?
+cc_responses = adrsp |>
+  filter(RSRESP == 'Complete response') |>
+  filter(RSCONFYN == 'Y')
+
+cat("There are ", nrow(complete_responses), "complete responses, and of those", nrow(complete_responses), ", only ", nrow(cc_responses), "are confirmed\n")
+```
+
+```{r}
+kable(head(cc_responses))
+```
+
+```{r}
+cc_unique <- cc_responses %>%
+  distinct(SUBJID)
+
+cat("\nHowever, not all of these are unique since some subjects appear more than once.
+There were only", nrow(cc_unique), "subjects who had complete, confirmed responses")
+```
+
+# Question 3
+
+It was hypothesized that patients in the study with KRAS mutations in exons 2, 3, and 4 would have poorer outcomes. Please use the data corresponding to KRAS exon 2, 3, and 4. and note that there two columns referencing exon 3 (c61 and c59/c61) -- use both. A patient will be considered "Mutant" if there is at least one "Mutant" biomarker in KRAS exons 2, 3, 4. Patients will be considered "Wild-type" if they are not "Mutant" and they have more "Wild-type" markers than "Unknown" or "Failure". 
+
+- Create a plot of number of total mutant, wild-type, and unknown KRAS counts per patient. That is, create a plot where the x-axis has the values "Mutant", "Wild-type", and "Unknown" with the y-axis showing the total count for those values over all patients.
+
+- Let the outcome be whether the patient died during the study. 
+
+  - Is the marker prognostic with respect to the death outcome? 
+  - Is it predictive with respect to the death outcome? 
+  - Propose a test to answer this question, implement, and explain the result. 
+  - Does your result confirm the hypothesis?
+
+```{r}
+filtered_biomark <- biomark %>%
+  select(c(1:7, 16:17))  # Selecting columns relevant to analysis
+
+# Function to determine genotype
+get_genotype <- function(subjid) {
+  sublist <- as.list(filtered_biomark[filtered_biomark$SUBJID == subjid, ][, c(3, 5, 7, 9)])
+  if ("Mutant" %in% sublist) {
+    return("Mutant")
+  } else if ((sum(sublist == "Wild-type") > sum(sublist == "Unknown")) | 
+             (sum(sublist == "Wild-type") > sum(sublist == "Failure")) |
+             (sum(sublist == "Wild-type") > sum(sublist == "")) # OH: need to include empty set
+             ) {
+    return("Wild-type")
+  } else {
+    return("Unknown")
+  }
+}
+
+filtered_biomark$Genotype <- sapply(filtered_biomark$SUBJID, get_genotype)
+
+summary_df <- as.data.frame(table(filtered_biomark$Genotype))
+colnames(summary_df) <- c("Category", "Count")
+
+kable(summary_df)
+```
+
+```{r, message=FALSE}
+d = left_join(filtered_biomark, 
+              adsl[, c("SUBJID", "ATRT", "DTH", "DTHDY")], 
+              by = "SUBJID")
+
+d |>
+  group_by(Genotype, ATRT, DTH) |>
+  summarize(count = n()) |>
+  kable()
+```
+
+```{r, message=FALSE}
+d %>%
+  filter(Genotype != "Unknown") %>%
+  group_by(ATRT, DTH) %>%
+  summarize(count = n()) |>
+  kable()
+```
+
+```{r, message=FALSE}
+d |>
+  group_by(Genotype, DTH) |>
+  summarize(count = n()) |>
+  kable()
+```
+
+```{r}
+ggplot(summary_df, aes(x = Category, y = Count, fill = Category)) +
+  geom_bar(stat = "identity") +
+  labs(title = "KRAS Mutation Status", x = "Category", y = "Count") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
+  geom_text(aes(label = Count), vjust = -0.5)
+```
+
+## Impact of Genotype and Treatment Arm on Patient Outcomes
+
+Before we start our analysis on whether markers are prognostic and predictive, let's start by taking a high-level look at our data
+
+```{r}
+# Filtering out unknown genotypes since these are not informative for this analysis
+d <- subset(d, Genotype != "Unknown")
+
+d$Genotype = factor(d$Genotype, ordered = FALSE)
+d$Genotype = relevel(d$Genotype, ref = "Wild-type")
+
+d$ATRT = factor(d$ATRT, ordered = FALSE)
+d$ATRT = relevel(d$ATRT, ref = "FOLFOX alone")
+
+surv_plot <- ggsurvplot(
+  survfit(Surv(DTHDY, DTH) ~ Genotype + ATRT, data = d),
+  data = d,
+  conf.int = TRUE,
+  legend.title = "Genotype & ATRT",
+  title = "Kaplan-Meier Survival Curve by Genotype & Treatment Arm",
+  xlab = "Time in Days",
+  ylab = "Survival Probability",
+  pval = TRUE
+)
+
+surv_plot$plot + geom_hline(yintercept = 0.5, col = 'red')
+```
+
+Here we can see the following:
+
+- There are some statistically significant interactions with p < 0.0001 although it is not specified what those interactions are.
+
+- Subjects with a "Wild-type" genotype generally show higher survival rates over time. 
+
+- Subjects with a "Mutant" genotype generally show lower survival rates over time.
+
+- If a subject has the "Wild-type" genotype, they may have an improved survival rate if they receive 'Panitumumab+FOLFOX' instead of 'FOLFOX alone'
+
+- If a subject has the "Mutant" genotype, they may have an improved survival rate if they receive 'FOLFOX alone' instead of 'Panitumumab+FOLFOX'
+
+However, this is simply a visualization, and does not show us which interactions are statistically significant. 
+A survival analysis also doesn't directly look at our outcome of interest - whether or not the patient dies.
+I have included some survival plots as helpful visualizations.
+
+## Prognostic Marker Analysis
+
+A marker is considered *prognostic* if its presence is associated with improved outcomes when a standard treatment is administered. To determine if the marker is prognostic with respect to the death outcome, I propose a chi-squared test.
+
+```{r}
+contingency_table <- table(d$Genotype, d$DTH)
+
+kable(contingency_table)
+```
+
+```{r}
+odds_ratio <- (contingency_table[2, 2] / contingency_table[2, 1]) / (contingency_table[1, 2] / contingency_table[1, 1])
+
+odds_ratio
+
+chi_squared_test <- chisq.test(contingency_table)
+
+chi_squared_test
+```
+
+The small p-value (< 0.05) indicates that there is a statistically significant association between Genotype and Death outcome. This suggests that the Genotype is associated with the Death outcome. Based on the contingency table, it looks like having a mutant genotype is associated with a higher likelihood of death.
+
+The genotype marker is prognostic.
+
+Some additional analysis to explore this relationship with regards to patient survival:
+
+The Kaplan-Meier curve assesses whether there are significant differences in survival times among different genotypic groups .
+
+```{r}
+ggsurvplot(
+  survfit(Surv(DTHDY, DTH) ~ Genotype, data = d),
+  data = d,
+  conf.int = TRUE,
+  legend.title = "Genotype",
+  title = "Kaplan-Meier Survival Curve by Genotype",
+  xlab = "Time in Days",
+  ylab = "Survival Probability",
+  risk.table = TRUE
+)
+```
+
+```{r}
+summary(coxph(Surv(d$DTHDY, d$DTH) ~ d$Genotype))
+```
+
+1. **Cox Proportional Hazards Model:**
+   - The coefficient for `d$GenotypeMutant` is 0.39534, which is positive. This positive coefficient suggests that having the "Mutant" genotype is associated with a higher hazard (risk) of death compared to the "Wild-type" reference group.
+
+2. **Log-Rank Test:**
+   - The log-rank test for the "Genotype" variable has a very small p-value (p=8e-07). This suggests that there is a significant difference in survival between different genotypes.
+
+Patients with the "Mutant" genotype have a lower chance of survival compared to those with the "Wild-type" genotype, as indicated by the positive coefficient and the significant log-rank test.
+
+## Predictive Marker Analysis
+
+A marker is considered *predictive* if its presence leads to better outcomes under treatment. Having the marker alone may not make a significant difference. However, when you combine the marker with treatment, you achieve better results than expected. If you possess the marker and receive treatment, your outcomes surpass those of individuals without the marker.
+
+To determine if the genotype marker is predictive of the death outcome, I propose another chi-squared test on 2x2 tables. Let's do this by doing 2 separate tests, one for each genotype.
+
+Starting with wild-type:
+
+```{r}
+contingency_table <- table(d[d$Genotype == "Wild-type", ]$ATRT, d[d$Genotype == "Wild-type", ]$DTH)
+
+kable(contingency_table)
+```
+
+```{r}
+odds_ratio <- (contingency_table[2, 2] / contingency_table[2, 1]) / (contingency_table[1, 2] / contingency_table[1, 1])
+
+odds_ratio
+
+chi_squared_test <- chisq.test(contingency_table)
+
+chi_squared_test
+```
+
+P-value is greater than 0.05. The treatment received does not significantly influence the death outcome for the wild-type marker.
+
+```{r}
+contingency_table <- table(d[d$Genotype == "Mutant", ]$ATRT, d[d$Genotype == "Mutant", ]$DTH)
+
+kable(contingency_table)
+```
+
+```{R}
+odds_ratio <- (contingency_table[1, 2] / contingency_table[1, 1]) / (contingency_table[2, 2] / contingency_table[2, 1])
+
+odds_ratio
+
+chi_squared_test <- chisq.test(contingency_table)
+
+chi_squared_test
+```
+
+P-value is greater than 0.05. The treatment received does not significantly influence the death outcome for the mutant marker.
+
+The patient genotype does not have an effect on the treatment's effectiveness. Therefore, we've concluded the genotype is not predictive of the death outcome.
+
+Given these results, we can confirm our hypothesis that patients in the study with KRAS mutations in exons 2, 3, and 4 have poorer outcomes.
