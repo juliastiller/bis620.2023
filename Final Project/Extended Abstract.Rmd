@@ -1,6 +1,6 @@
 ---
 title: "Extended Abstract"
-author: "Anmol Seth - anmol.seth@yale.edu"
+author: "Anmol Seth, Julia Stiller"
 date: "2023-12-19"
 output: html_document
 ---
@@ -13,41 +13,37 @@ output:
 
 # Background and Motivation
 
-## Introduction
+#### Introduction
 
 The Panitumumab Randomized trial In combination with chemotherapy for Metastatic colorectal cancer to determine Efficacy (PRIME) is a pivotal study in the field of oncology. Conducted by Douillard et al. in 2014, the study focused on evaluating the efficacy of panitumumab-FOLFOX4 compared to FOLFOX4 alone as first-line treatment for wild-type (WT) KRAS metastatic colorectal cancer (mCRC).
 
-## Significance of the PRIME Study
+#### Significance of the PRIME Study
 
 The PRIME study demonstrated that panitumumab-FOLFOX4 significantly improved progression-free survival (PFS) compared to FOLFOX4 in patients with WT KRAS mCRC. This improvement in PFS, along with other key findings, suggests the potential of panitumumab as an effective treatment option for a specific subset of mCRC patients.
 
-## Context within Scientific Research
+#### Context within Scientific Research
 
 Colorectal cancer remains a significant global health concern, and advancements in treatment strategies are crucial for improving patient outcomes. The PRIME study contributes valuable insights into the effectiveness of targeted therapies, emphasizing the importance of molecular profiling, such as KRAS testing, in treatment decision-making.
 
-## Implications for Healthcare
+#### Implications for Healthcare
 
 The positive benefit-risk profile observed in the PRIME study raises important considerations for healthcare practitioners. Understanding the impact of panitumumab-FOLFOX4 on both progression-free survival and overall survival in WT KRAS mCRC patients is vital for informed clinical decision-making.
 
-## Research Gap Addressed
+#### Research Gap Addressed
 
 The study addresses a notable research gap by providing evidence for the efficacy and safety of panitumumab-FOLFOX4 in previously untreated WT KRAS mCRC patients. This information is critical for identifying patients who would benefit the most from this treatment regimen.
 
-# Motivation for Analysis
+#### Motivation for Analysis
 
 Given the significance of the PRIME study, our analysis aims to further explore and validate the findings. We seek to leverage statistical methods to gain a deeper understanding of the impact of panitumumab-FOLFOX4 on key clinical outcomes, thereby contributing to the broader knowledge base in oncology.
 
 # Research Question and Statistical Experiment
 
-## Research Question
+## Research Questions
 
 **"Does the presence of KRAS mutations significantly impact the survival outcomes of metastatic colorectal cancer patients receiving different treatment regimens, specifically Panitumumab in combination with FOLFOX and FOLFOX alone?"**
 
-Additional research questions we could explore:
-- How do specific biomarkers correlate with treatment response in patients receiving Panitumumab?
-- Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?
-
-## Statistical Experiment
+#### Statistical Experiment
 
 1. **Null Hypothesis (H0):** There is no significant difference in survival outcomes between patients with the "Mutant" and "Wild-type" KRAS genotypes, regardless of the treatment arm.
 
@@ -64,11 +60,58 @@ Additional research questions we could explore:
 
 5. **Significance Level (α):** Set a predetermined significance level (e.g., α = 0.05) to determine statistical significance.
 
-6. **Additional Analysis:**
-   - Perform subgroup analyses based on treatment arms to explore specific survival patterns within each group.
-   - Assess the impact of other relevant variables (if available) on survival outcomes.
+**Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?**
+Null Hypothesis (H0): The combination of Genotype and Treatment Arm does not significantly impact patient survival outcomes.
+Alternative Hypothesis (H1): The combination of Genotype and Treatment Arm significantly impacts patient survival outcomes.
 
+**Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?**
+Null Hypothesis (H0): There is no significant difference in the occurrence of adverse events between treatment arms.
+Alternative Hypothesis (H1): There is a significant difference in the occurrence of adverse events between treatment arms.
 
+**Are there significant differences in the survival distribution over time between different genotypes?**
+Null Hypothesis (H0): There is no significant difference in the survival distribution over time among different genotypes.
+Alternative Hypothesis (H1): There are significant differences in the survival distribution over time among different genotypes.
 
+**Does the treatment arm influence the survival distribution over time within each genotype?**
+Null Hypothesis (H0): The treatment arm does not significantly influence the survival distribution over time within each genotype.
+Alternative Hypothesis (H1): The treatment arm significantly influences the survival distribution over time within each genotype.
+
+# Data Cleaning and Exploration
+
+### Data Cleaning and Exploration Summary
+
+1. **Loading and Organizing the Data:**
+   - Utilized the `haven` and `purrr` libraries to read SAS datasets into a list.
+   - Extracted relevant datasets, including severity code, actual treatment, confirmed responses, and biomarkers.
+
+2. **Biomarker Data Cleaning:**
+   - Selected pertinent columns for analysis from the biomarker dataset.
+   - Developed a function to determine the genotype based on biomarker information.
+   - Added a "Genotype" column to the filtered biomarker data.
+   - Provided a summary table of the distribution of genotypes.
+
+3. **Merging Datasets:**
+   - Merged relevant datasets based on the 'SUBJID' key, incorporating biomarker information with actual treatment and patient outcomes.
+
+4. **Exploratory Data Analysis (EDA):**
+   - Generated summary tables and visualizations to explore the distribution of genotypes, actual treatment, and patient outcomes.
+   - Conducted exploratory analysis on ATRT and DTH distributions within each genotype.
+
+5. **Visualization: KRAS Mutation Status:**
+   - Created a bar chart to visualize the distribution of KRAS mutation status, providing a clear overview of the dataset.
+
+6. **Kaplan-Meier Survival Analysis:**
+   - Filtered out unknown genotypes for survival analysis.
+   - Set factors and levels for genotype and actual treatment.
+   - Conducted Kaplan-Meier survival analysis to assess the impact of genotype and treatment arm on patient outcomes.
+   - Presented Kaplan-Meier survival curves for different scenarios, highlighting potential differences in survival probabilities.
+
+7. **Cox Proportional Hazards Model:**
+   - Fitted a Cox Proportional Hazards model to quantify the association between genotype and the hazard of death.
+   - Provided a summary of the model's coefficients and significance levels.
+
+# Analysis
+
+# Interpretations and Conclusions
 
  

@@ -5,8 +5,7 @@ format:
   html:
     self-contained: true
 ---
-
-Please use the Panitumumab data we've been going over in class to complete the following questions ([NCT00364013](https://clinicaltrials.gov/ct2/show/NCT00364013?term=NCT00364013&draw=2&rank=1)). 
+Data Source: ([NCT00364013](https://clinicaltrials.gov/ct2/show/NCT00364013?term=NCT00364013&draw=2&rank=1)). 
 
 - Note 1: You'll want to use the confirmed responses.
 - Note 2: You'll want to use ATRT (actual treatment)
@@ -94,7 +93,7 @@ ggplot(summary_df, aes(x = Category, y = Count, fill = Category)) +
   geom_text(aes(label = Count), vjust = -0.5)
 ```
 
-## Impact of Genotype and Treatment Arm on Patient Outcomes
+**Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?**
 
 ```{r}
 # Filtering out unknown genotypes since these are not informative for this analysis
@@ -132,8 +131,7 @@ Here we can see the following:
 
 - If a subject has the "Mutant" genotype, they may have an improved survival rate if they receive 'FOLFOX alone' instead of 'Panitumumab+FOLFOX'
 
-
-Some additional analysis to explore this relationship with regards to patient survival:
+**"Does the presence of KRAS mutations significantly impact the survival outcomes of metastatic colorectal cancer patients receiving different treatment regimens, specifically Panitumumab in combination with FOLFOX and FOLFOX alone?"**
 
 The Kaplan-Meier curve assesses whether there are significant differences in survival times among different genotypic groups .
 
@@ -162,10 +160,7 @@ summary(coxph(Surv(d$DTHDY, d$DTH) ~ d$Genotype))
 
 Patients with the "Mutant" genotype have a lower chance of survival compared to those with the "Wild-type" genotype, as indicated by the positive coefficient and the significant log-rank test.
 
------------------------
-Exploratory code for suggested further analysis 
-
-- Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?
+**Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?**
 
 ```{r}
 # Example code
@@ -182,12 +177,36 @@ ggplot(adverse_events, aes(x = ATRT, y = AdverseEventRate, fill = ATRT)) +
 ```
 
 ```{r}
-# Load necessary libraries if not already loaded
-library(ggplot2)
-library(survival)
-library(survminer)
+# Example code with statistical test
+adverse_events <- d %>%
+  group_by(ATRT) %>%
+  summarize(AdverseEventRate = mean(DTH == "1", na.rm = TRUE))
 
-# Assuming d is your dataset
+# Create a contingency table
+contingency_table <- table(d$DTH == "1", d$ATRT)
+
+# Perform chi-squared test
+chi_squared_test <- chisq.test(contingency_table)
+
+# Print the test results
+print(chi_squared_test)
+
+# Plot the bar chart
+ggplot(adverse_events, aes(x = ATRT, y = AdverseEventRate, fill = ATRT)) +
+  geom_bar(stat = "identity") +
+  labs(
+    title = "Adverse Events by Treatment Arm",
+    x = "Treatment Arm",
+    y = "Adverse Event Rate"
+  ) +
+  theme_minimal()
+
+```
+**Are there significant differences in the survival distribution over time between different genotypes?**
+This plot should be considered part of the analysis, but merely exploratory
+
+
+```{r}
 ggplot(d, aes(x = DTHDY, color = Genotype)) +
   theme_minimal() +
   geom_density() +
@@ -195,8 +214,24 @@ ggplot(d, aes(x = DTHDY, color = Genotype)) +
   theme(legend.position = "top")
 
 ```
+Are there significant differences in the survival distribution over time between different genotypes?
 
+Hypothesis:
+Null Hypothesis (H0): There is no significant difference in the survival distribution over time among different genotypes.
+Alternative Hypothesis (H1): There are significant differences in the survival distribution over time among different genotypes.
 
+```{r}
+surv_diff_genotype <- survdiff(Surv(DTHDY, DTH) ~ Genotype, data = d)
+print(surv_diff_genotype)
+```
 
+**Does the treatment arm influence the survival distribution over time within each genotype?**
 
+Hypothesis:
+Null Hypothesis (H0): The treatment arm does not significantly influence the survival distribution over time within each genotype.
+Alternative Hypothesis (H1): The treatment arm significantly influences the survival distribution over time within each genotype.
 
+```{r}
+surv_diff_treatment <- survdiff(Surv(DTHDY, DTH) ~ ATRT, data = d)
+print(surv_diff_treatment)
+```
