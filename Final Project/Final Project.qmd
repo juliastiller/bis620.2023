@@ -85,7 +85,6 @@ d |>
     geom_text(aes(label = Count), vjust = -0.5)
 ```
 
-should we include predictive/ prognostic analysis done in HW2 to show where we're picking up from?
 we know from HW2 that genotype is prognostic but not predictive (genotype impacts death outcome but this is not exacerbated by treatment). so we know that mutants are more likely to die (prognostic), but don't know how many fewer days they will live. And we know that mutants are not more likely to die when being treated (predictive), but we do not know how much longer mutant & wild-types live while on treatment. We set out to answer these questions:
 
 

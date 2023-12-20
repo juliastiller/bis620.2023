@@ -222,7 +222,7 @@ source("test_survival_days_genotype.R")
 test_survival_days_genotype(d)
 ```
 
-Patients with a mutant genotype generally have 48 to 146 fewer days to live than those with a wild-type (p<0.05).
+The two-sample t-test was conducted using the test_survival_days_genotype function, comparing survival days between patients with mutant and wild-type genotypes. The results indicate a statistically significant difference in mean survival days, with patients having a mutant genotype expected to live between 48 to 146 days fewer than those with a wild-type genotype (p-value = 0.000102, 95% CI: -146.73053 to -48.55124). The mean survival days for the mutant genotype group (571.6495) are notably lower than for the wild-type group (669.2904).
 
 
 ## Visualize average survival by genotype
@@ -242,7 +242,7 @@ source("test_survival_days_treatment.R")
 test_survival_days_treatment(d)
 ```
 
-Patients on one or both treatments do not have a different number of survival days (p>0.05).
+The results of the two-sample t-test indicate no statistically significant difference in mean survival days between patients receiving FOLFOX alone and those receiving Panitumumab + FOLFOX (p-value = 0.868, 95% CI: -43.27879 to 51.28986). The mean survival days for patients in the FOLFOX alone group (618.5910) are comparable to those in the Panitumumab + FOLFOX group (614.5855).
 
 
 ## Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?
@@ -328,6 +328,8 @@ source("test_adverse_events_genotype.R")
 test_adverse_events_genotype(d)
 ```
 
+The two-sample t-test results suggest no statistically significant difference in the mean number of adverse events between patients with a mutant genotype and those with a wild-type genotype (p-value = 0.4311, 95% CI: -0.3479129 to 0.1486450). The mean number of adverse events for the mutant genotype group (1.507353) is comparable to that of the wild-type genotype group (1.606987).
+
 ```{r}
 source("plot_adverse_events_treatment.R")
 
@@ -340,9 +342,19 @@ source("test_adverse_events_treatment.R")
 test_adverse_events_treatment(d)
 ```
 
-Wild-type and mutant genotypes do not have different numbers of adverse events during the trial (p>0.05). However, we did find that patients taking Folfox alone had an average of 2 fewer adverse events than patients taking both Folfox combined with Panitumumab (p<0.05).
+The two-sample t-test results indicate a highly significant difference in the mean number of adverse events between patients receiving FOLFOX alone and those receiving Panitumumab + FOLFOX (p-value < 2.2e-16, 95% CI: -2.314831 to -1.926636). The mean number of adverse events for the FOLFOX alone group (0.496788) is substantially lower than that of the Panitumumab + FOLFOX group (2.617521).
+
+**Wild-type and mutant genotypes do not have different numbers of adverse events during the trial (p>0.05). However, we did find that patients taking Folfox alone had an average of 2 fewer adverse events than patients taking both Folfox combined with Panitumumab (p<0.05).**
 
 
 # Interpretations and Conclusions
 
- 
+ In this comprehensive analysis of the Panitumumab clinical trial data, we explored various aspects related to patient outcomes, genotype, and treatment arms. Our initial focus was on understanding the impact of genotype and treatment on patient survival. The Kaplan-Meier survival curves revealed significant differences between genotypes, with patients having a "Mutant" genotype exhibiting lower survival rates compared to those with a "Wild-type" genotype. Additionally, the Cox Proportional Hazards Model and log-rank test supported these findings, indicating that patients with the "Mutant" genotype face a higher risk of death.
+
+Further investigations delved into the association between treatment arms and survival. The survival analysis suggested that patients with a "Wild-type" genotype might experience improved survival when treated with 'Panitumumab + FOLFOX' compared to 'FOLFOX alone.' Conversely, patients with a "Mutant" genotype may fare better with 'FOLFOX alone' than 'Panitumumab + FOLFOX.' This nuanced understanding can guide personalized treatment decisions based on genotype.
+
+Exploring adverse events, we conducted t-tests to compare their occurrence based on genotype and treatment. The results indicated no significant difference in adverse events between genotypes. However, a striking difference emerged when comparing treatment arms, revealing a substantial increase in adverse events for patients receiving 'Panitumumab + FOLFOX' compared to 'FOLFOX alone.'
+
+The two-sample t-tests for survival days highlighted significant differences between genotypes. Patients with a "Mutant" genotype generally had fewer days to live than those with a "Wild-type" genotype, emphasizing the clinical relevance of genetic information in predicting outcomes.
+
+In summary, our analyses provide a multifaceted understanding of the Panitumumab clinical trial data. The results underscore the importance of considering both genotype and treatment arms in predicting patient outcomes. The observed differences in survival and adverse events support the notion that a personalized approach, tailored to individual genotypes, could enhance treatment efficacy and minimize adverse effects. Moving forward, these findings suggest the need for further exploration of genotype-specific treatment strategies and potential biomarkers to refine patient stratification and optimize therapeutic interventions.
