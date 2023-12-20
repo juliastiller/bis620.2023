@@ -133,17 +133,17 @@ Patients on one or both treatments do not have a different number of survival da
 
 ```{r}
 # Filtering out unknown genotypes since these are not informative for this analysis
-d <- subset(d, Genotype != "Unknown")
+dcombo <- subset(d, Genotype != "Unknown")
 
-d$Genotype = factor(d$Genotype, ordered = FALSE)
-d$Genotype = relevel(d$Genotype, ref = "Wild-type")
+dcombo$Genotype = factor(dcombo$Genotype, ordered = FALSE)
+dcombo$Genotype = relevel(dcombo$Genotype, ref = "Wild-type")
 
-d$ATRT = factor(d$ATRT, ordered = FALSE)
-d$ATRT = relevel(d$ATRT, ref = "FOLFOX alone")
+dcombo$ATRT = factor(dcombo$ATRT, ordered = FALSE)
+dcombo$ATRT = relevel(dcombo$ATRT, ref = "FOLFOX alone")
 
 surv_plot <- ggsurvplot(
-  survfit(Surv(DTHDY, DTH) ~ Genotype + ATRT, data = d),
-  data = d,
+  survfit(Surv(DTHDY, DTH) ~ Genotype + ATRT, data = dcombo),
+  data = dcombo,
   conf.int = TRUE,
   legend.title = "Genotype & ATRT",
   title = "Kaplan-Meier Survival Curve by Genotype & Treatment Arm",
@@ -173,8 +173,8 @@ The Kaplan-Meier curve assesses whether there are significant differences in sur
 
 ```{r}
 ggsurvplot(
-  survfit(Surv(DTHDY, DTH) ~ Genotype, data = d),
-  data = d,
+  survfit(Surv(DTHDY, DTH) ~ Genotype, data = dcombo),
+  data = dcombo,
   conf.int = TRUE,
   legend.title = "Genotype",
   title = "Kaplan-Meier Survival Curve by Genotype",
@@ -185,11 +185,11 @@ ggsurvplot(
 ```
 
 ```{r}
-summary(coxph(Surv(d$DTHDY, d$DTH) ~ d$Genotype))
+summary(coxph(Surv(dcombo$DTHDY, dcombo$DTH) ~ dcombo$Genotype))
 ```
 
 1. **Cox Proportional Hazards Model:**
-   - The coefficient for `d$GenotypeMutant` is 0.39534, which is positive. This positive coefficient suggests that having the "Mutant" genotype is associated with a higher hazard (risk) of death compared to the "Wild-type" reference group.
+   - The coefficient for `dcombo$GenotypeMutant` is 0.39534, which is positive. This positive coefficient suggests that having the "Mutant" genotype is associated with a higher hazard (risk) of death compared to the "Wild-type" reference group.
 
 2. **Log-Rank Test:**
    - The log-rank test for the "Genotype" variable has a very small p-value (p=8e-07). This suggests that there is a significant difference in survival between different genotypes.
@@ -197,6 +197,48 @@ summary(coxph(Surv(d$DTHDY, d$DTH) ~ d$Genotype))
 Patients with the "Mutant" genotype have a lower chance of survival compared to those with the "Wild-type" genotype, as indicated by the positive coefficient and the significant log-rank test.
 
 **Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?**
+
+The following code adds the number of unique adverse events per patient and examines whether there is a difference in this number by genotype or treatment:
+
+```{r}
+adverse_events_temp <- adae |>
+  group_by(SUBJID, AEPT) |>
+  summarize(n = n())
+
+adverse_events_per_subject <- adverse_events_temp |>
+  group_by(SUBJID) |>
+  summarize(adverse_events = n())
+
+d_ae <- d |>
+  left_join(adverse_events_per_subject, by = "SUBJID")
+
+d_ae$adverse_events <- if_else(is.na(d_ae$adverse_events), 0, d_ae$adverse_events)
+  
+mutant_adverse_events <- d_ae |>
+  filter(Genotype == "Mutant") |>
+  select(adverse_events)
+
+wild_type_adverse_events <- d_ae |>
+  filter(Genotype == "Wild-type") |>
+  select(adverse_events)
+
+t.test(mutant_adverse_events, wild_type_adverse_events, var.equal = TRUE)
+
+folfox_adverse_events <- d_ae |>
+  filter(ATRT == "FOLFOX alone") |>
+  select(adverse_events)
+
+folxfox_panitumumab_adverse_events <- d_ae |>
+  filter(ATRT == "Panitumumab + FOLFOX") |>
+  select(adverse_events)
+
+t.test(folfox_adverse_events, folxfox_panitumumab_adverse_events, var.equal = TRUE)
+```
+
+Wild-type and mutant genotypes do not have different numbers of adverse events during the trial (p>0.05). However, we did find that patients taking Folfox alone had an average of 2 fewer adverse events than patients taking both Folfox combined with Panitumumab (p<0.05).
+
+
+Do you need to keep any of the following adverse events code?
 
 ```{r}
 # Example code
