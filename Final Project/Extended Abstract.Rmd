@@ -140,7 +140,7 @@ d$adverse_events <- if_else(is.na(d$adverse_events), 0, d$adverse_events)
 
 ## Visualize dataset
 
-```{r}
+```{r, fig.width=8, fig.height=6}
 d |> group_by(Genotype) |>
   summarize(Count = n()) |>
   ggplot(aes(x = Genotype, y = Count, fill = Genotype)) +
@@ -207,7 +207,7 @@ d |>
 
 ## Visualize average survival by genotype
 
-```{r, message=FALSE}
+```{r, message=FALSE, fig.width=8, fig.height=6}
 source("plot_survival_days_genotype.R")
 
 plot_survival_days_genotype(d)
@@ -227,7 +227,7 @@ The two-sample t-test was conducted using the test_survival_days_genotype functi
 
 ## Visualize average survival by genotype
 
-```{r, message=FALSE}
+```{r, message=FALSE, fig.width=8, fig.height=6}
 source("plot_survival_days_treatment.R")
 
 plot_survival_days_treatment(d)
@@ -247,7 +247,7 @@ The results of the two-sample t-test indicate no statistically significant diffe
 
 ## Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?
 
-```{r}
+```{r, fig.width=8, fig.height=6}
 # Filtering out unknown genotypes since these are not informative for this analysis
 dcombo <- subset(d, Genotype != "Unknown")
 
@@ -288,7 +288,7 @@ Here we can see the following:
 
 The Kaplan-Meier curve assesses whether there are significant differences in survival times among different genotypic groups .
 
-```{r}
+```{r, fig.width=8, fig.height=6}
 ggsurvplot(
   survfit(Surv(DTHDY, DTH) ~ Genotype, data = dcombo),
   data = dcombo,
@@ -316,7 +316,7 @@ Patients with the "Mutant" genotype have a lower chance of survival compared to 
 
 ## Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?
 
-```{r}
+```{r, fig.width=8, fig.height=6}
 source("plot_adverse_events_genotype.R")
 
 plot_adverse_events_genotype(d)
@@ -330,7 +330,7 @@ test_adverse_events_genotype(d)
 
 The two-sample t-test results suggest no statistically significant difference in the mean number of adverse events between patients with a mutant genotype and those with a wild-type genotype (p-value = 0.4311, 95% CI: -0.3479129 to 0.1486450). The mean number of adverse events for the mutant genotype group (1.507353) is comparable to that of the wild-type genotype group (1.606987).
 
-```{r}
+```{r, fig.width=8, fig.height=6}
 source("plot_adverse_events_treatment.R")
 
 plot_adverse_events_treatment(d)
