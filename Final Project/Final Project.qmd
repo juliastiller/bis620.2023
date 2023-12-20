@@ -1,14 +1,11 @@
 ---
-title: "BIS 620 Homework 2"
-author: Anmol Seth, anmol.seth@yale.edu
+title: "BIS 620 Final Project"
+author: Anmol Seth, anmol.seth@yale.edu; Julia Stiller, julia.stiller@yale.edu
 format:
   html:
     self-contained: true
 ---
 Data Source: ([NCT00364013](https://clinicaltrials.gov/ct2/show/NCT00364013?term=NCT00364013&draw=2&rank=1)). 
-
-- Note 1: You'll want to use the confirmed responses.
-- Note 2: You'll want to use ATRT (actual treatment)
 
 ```{r Setup, message=FALSE, warning=FALSE}
 library(haven)
@@ -25,11 +22,13 @@ trial_files = list.files(trial_path, pattern = "*_pds2019.sas7bdat")
 dl = map(file.path(trial_path, trial_files), ~ read_sas(.x))
 names(dl) = gsub("*_pds2019.sas7bdat", "", trial_files)
 
-adae = dl$adae #contains severity code 
-adsl = dl$adsl #contains ATRT (actual treatment)
-adrsp = dl$adrsp #contains confirmed responses
+adae = dl$adae #"adverse events" contains severity code 
+adsl = dl$adsl #"subject-level" contains ATRT (actual treatment)
+adrsp = dl$adrsp #"response" contains confirmed responses
 biomark = dl$biomark #contains biomarkers
 ```
+
+## Visualize Distribution of Genotypes (a.k.a. biomarkers)
 
 ```{r}
 filtered_biomark <- biomark %>%
@@ -58,32 +57,6 @@ colnames(summary_df) <- c("Category", "Count")
 kable(summary_df)
 ```
 
-```{r, message=FALSE}
-d = left_join(filtered_biomark, 
-              adsl[, c("SUBJID", "ATRT", "DTH", "DTHDY")], 
-              by = "SUBJID")
-
-d |>
-  group_by(Genotype, ATRT, DTH) |>
-  summarize(count = n()) |>
-  kable()
-```
-
-```{r, message=FALSE}
-d %>%
-  filter(Genotype != "Unknown") %>%
-  group_by(ATRT, DTH) %>%
-  summarize(count = n()) |>
-  kable()
-```
-
-```{r, message=FALSE}
-d |>
-  group_by(Genotype, DTH) |>
-  summarize(count = n()) |>
-  kable()
-```
-
 ```{r}
 ggplot(summary_df, aes(x = Category, y = Count, fill = Category)) +
   geom_bar(stat = "identity") +
@@ -92,6 +65,69 @@ ggplot(summary_df, aes(x = Category, y = Count, fill = Category)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
   geom_text(aes(label = Count), vjust = -0.5)
 ```
+
+should we include predictive/ prognostic analysis done in HW2 to show where we're picking up from?
+we know from HW2 that genotype is prognostic but not predictive (genotype impacts death outcome but this is not exacerbated by treatment). so we know that mutants are more likely to die (prognostic), but don't know how many fewer days they will live. And we know that mutants are not more likely to die when being treated (predictive), but we do not know how much longer mutant & wild-types live while on treatment. We set out to answer these questions:
+
+
+## Visualize how many deaths occured during the study and how long people lived, by genotype
+
+```{r, message=FALSE}
+d = left_join(filtered_biomark, 
+              adsl[, c("SUBJID", "ATRT", "DTH", "DTHDY")], 
+              by = "SUBJID")
+
+d |>
+  filter(Genotype != "Unknown") %>% #ignore unknown genotypes
+  group_by(Genotype, DTH) |>
+  summarize(count = n(), avg_survival_days = sum(DTHDY)/n()) |>
+  kable()
+```
+
+## Analyze whether number of survival days differed by genotype
+
+```{r}
+mutant_survival_days <- d |>
+  filter(Genotype == "Mutant") |>
+  select(DTHDY)
+
+wild_type_survival_days <- d |>
+  filter(Genotype == "Wild-type") |>
+  select(DTHDY)
+
+t.test(mutant_survival_days, wild_type_survival_days, var.equal = TRUE)
+```
+
+Patients with a mutant genotype generally have 48 to 146 fewer days to live than those with a wild-type (p<0.05).
+
+
+## Visualize how many deaths occured during the study and how long people lived, by treatment
+
+```{r, message=FALSE}
+d |>
+  filter(Genotype != "Unknown") %>% #ignore unknown genotypes
+  group_by(ATRT, DTH) |>
+  summarize(count = n(), avg_survival_days = sum(DTHDY)/n()) |>
+  kable()
+```
+
+
+## Analyze whether number of survival days differed by treatment
+
+```{r, message=FALSE}
+folfox_survival_days <- d |>
+  filter(ATRT == "FOLFOX alone") |>
+  select(DTHDY)
+
+folxfox_panitumumab_survival_days <- d |>
+  filter(ATRT == "Panitumumab + FOLFOX") |>
+  select(DTHDY)
+
+t.test(folfox_survival_days, folxfox_panitumumab_survival_days, var.equal = TRUE)
+```
+
+Patients on one or both treatments do not have a different number of survival days (p>0.05).
+
 
 **Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?**
 
