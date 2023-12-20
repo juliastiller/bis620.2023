@@ -9,7 +9,7 @@
 #'
 #' @return A bar chart showing the number of adverse events by genotype.
 #'
-#' @importFrom dplyr filter group_by summarize
+#' @importFrom dplyr filter group_by summarize n
 #' @importFrom ggplot2 ggplot aes geom_bar labs theme_minimal theme element_text geom_text
 #'
 #' @export
