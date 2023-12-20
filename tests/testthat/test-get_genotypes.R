@@ -1,4 +1,5 @@
 test_that("get_genotypes() generates a string", {
-  get_genotype("000003")
+  expect_equal(get_genotype("000001"), "Unknown")
   expect_equal(get_genotype("000003"), "Mutant")
+  expect_equal(get_genotype("000018"), "Mutant")
 })
