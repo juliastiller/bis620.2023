@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='svglite' data-engine-version='2.0' width='720.00pt' height='576.00pt' viewBox='0 0 720.00 576.00'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA='>
+    <rect x='0.00' y='0.00' width='720.00' height='576.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+</g>
+<defs>
+  <clipPath id='cpMzcuNjl8NTcwLjI5fDIyLjc4fDQ3Ny4wMw=='>
+    <rect x='37.69' y='22.78' width='532.61' height='454.25' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMzcuNjl8NTcwLjI5fDIyLjc4fDQ3Ny4wMw==)'>
+<polyline points='37.69,390.48 570.29,390.48 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='37.69,258.69 570.29,258.69 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='37.69,126.90 570.29,126.90 ' style='stroke-width: 0.53; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='37.69,456.38 570.29,456.38 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='37.69,324.59 570.29,324.59 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='37.69,192.79 570.29,192.79 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='37.69,61.00 570.29,61.00 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='182.94,477.03 182.94,22.78 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<polyline points='425.04,477.03 425.04,22.78 ' style='stroke-width: 1.07; stroke: #EBEBEB; stroke-linecap: butt;' />
+<rect x='74.00' y='43.43' width='217.88' height='412.95' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #F8766D;' />
+<rect x='316.10' y='47.85' width='217.88' height='408.53' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #00BFC4;' />
+<text x='182.94' y='39.63' text-anchor='middle' style='font-size: 11.04px; font-family: sans;' textLength='33.77px' lengthAdjust='spacingAndGlyphs'>626.66</text>
+<text x='425.04' y='44.05' text-anchor='middle' style='font-size: 11.04px; font-family: sans;' textLength='33.77px' lengthAdjust='spacingAndGlyphs'>619.95</text>
+</g>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+<text x='32.76' y='459.41' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='4.89px' lengthAdjust='spacingAndGlyphs'>0</text>
+<text x='32.76' y='327.62' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='14.68px' lengthAdjust='spacingAndGlyphs'>200</text>
+<text x='32.76' y='195.82' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='14.68px' lengthAdjust='spacingAndGlyphs'>400</text>
+<text x='32.76' y='64.03' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='14.68px' lengthAdjust='spacingAndGlyphs'>600</text>
+<text transform='translate(187.23,486.24) rotate(-45)' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='59.19px' lengthAdjust='spacingAndGlyphs'>FOLFOX alone</text>
+<text transform='translate(429.32,486.24) rotate(-45)' text-anchor='end' style='font-size: 8.80px; fill: #4D4D4D; font-family: sans;' textLength='99.55px' lengthAdjust='spacingAndGlyphs'>Panitumumab + FOLFOX</text>
+<text x='303.99' y='568.24' text-anchor='middle' style='font-size: 11.00px; font-family: sans;' textLength='50.13px' lengthAdjust='spacingAndGlyphs'>Treatment</text>
+<text transform='translate(13.05,249.91) rotate(-90)' text-anchor='middle' style='font-size: 11.00px; font-family: sans;' textLength='118.62px' lengthAdjust='spacingAndGlyphs'>Average Survival (Days)</text>
+<text x='586.73' y='233.67' style='font-size: 11.00px; font-family: sans;' textLength='28.72px' lengthAdjust='spacingAndGlyphs'>ATRT</text>
+<rect x='587.44' y='241.00' width='15.86' height='15.86' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #F8766D;' />
+<rect x='587.44' y='258.28' width='15.86' height='15.86' style='stroke-width: 1.07; stroke: none; stroke-linecap: butt; stroke-linejoin: miter; fill: #00BFC4;' />
+<text x='609.49' y='251.96' style='font-size: 8.80px; font-family: sans;' textLength='59.19px' lengthAdjust='spacingAndGlyphs'>FOLFOX alone</text>
+<text x='609.49' y='269.24' style='font-size: 8.80px; font-family: sans;' textLength='99.55px' lengthAdjust='spacingAndGlyphs'>Panitumumab + FOLFOX</text>
+<text x='37.69' y='14.56' style='font-size: 13.20px; font-family: sans;' textLength='137.21px' lengthAdjust='spacingAndGlyphs'>Treatment Avg Survival</text>
+</g>
+</svg>
