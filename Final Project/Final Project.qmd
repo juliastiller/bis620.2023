@@ -31,23 +31,10 @@ biomark = dl$biomark #contains biomarkers
 ## Visualize Distribution of Genotypes (a.k.a. biomarkers)
 
 ```{r}
+source("get_genotype.R")
+
 filtered_biomark <- biomark %>%
   select(c(1:7, 16:17))  # Selecting columns relevant to analysis
-
-# Function to determine genotype
-get_genotype <- function(subjid) {
-  sublist <- as.list(filtered_biomark[filtered_biomark$SUBJID == subjid, ][, c(3, 5, 7, 9)])
-  if ("Mutant" %in% sublist) {
-    return("Mutant")
-  } else if ((sum(sublist == "Wild-type") > sum(sublist == "Unknown")) | 
-             (sum(sublist == "Wild-type") > sum(sublist == "Failure")) |
-             (sum(sublist == "Wild-type") > sum(sublist == "")) # OH: need to include empty set
-             ) {
-    return("Wild-type")
-  } else {
-    return("Unknown")
-  }
-}
 
 filtered_biomark$Genotype <- sapply(filtered_biomark$SUBJID, get_genotype)
 
@@ -87,15 +74,9 @@ d |>
 ## Analyze whether number of survival days differed by genotype
 
 ```{r}
-mutant_survival_days <- d |>
-  filter(Genotype == "Mutant") |>
-  select(DTHDY)
+source("survival_days_genotype.R")
 
-wild_type_survival_days <- d |>
-  filter(Genotype == "Wild-type") |>
-  select(DTHDY)
-
-t.test(mutant_survival_days, wild_type_survival_days, var.equal = TRUE)
+survival_days_genotype(d)
 ```
 
 Patients with a mutant genotype generally have 48 to 146 fewer days to live than those with a wild-type (p<0.05).
