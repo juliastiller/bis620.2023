@@ -1,0 +1,363 @@
+---
+title: "Extended Abstract: Analysis of Panitumumab Randomized Trial"
+author: "Anmol Seth, Julia Stiller"
+date: "2023-12-19"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Spectral Signatures}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# Background and Motivation
+
+#### Introduction
+
+The Panitumumab Randomized trial In combination with chemotherapy for Metastatic colorectal cancer to determine Efficacy (PRIME) conducted by Douillard et al. in 2014 is a pivotal study in oncology. This investigation focused on assessing the efficacy of panitumumab-FOLFOX4 in comparison to FOLFOX4 alone as the first-line treatment for wild-type (WT) KRAS metastatic colorectal cancer (mCRC).
+
+The PRIME study yielded significant findings, demonstrating that panitumumab-FOLFOX4 led to a marked improvement in progression-free survival (PFS) compared to FOLFOX4 in patients with WT KRAS mCRC. This observed enhancement in PFS underscores the potential of panitumumab as an effective treatment option for a specific subset of mCRC patients.
+
+Against the backdrop of colorectal cancer's global health impact, the PRIME study contributes valuable insights into the effectiveness of targeted therapies. The study emphasizes the critical role of molecular profiling, such as KRAS testing, in guiding treatment decisions for better patient outcomes.
+
+The positive benefit-risk profile observed in the PRIME study holds significant implications for healthcare practitioners. Understanding the impact of panitumumab-FOLFOX4 on both progression-free survival and overall survival in WT KRAS mCRC patients becomes crucial for informed clinical decision-making.
+
+Addressing a notable research gap, the study provides evidence for the efficacy and safety of panitumumab-FOLFOX4 in previously untreated WT KRAS mCRC patients. This information is essential for identifying patients who would benefit the most from this treatment regimen.
+
+#### Motivation for Analysis
+
+Given the significance of the PRIME study, our analysis aims to further explore and validate the findings. We seek to leverage statistical methods to gain a deeper understanding of the impact of panitumumab-FOLFOX4 on key clinical outcomes, thereby contributing to the broader knowledge base in oncology.
+
+# Research Question and Statistical Experiment
+
+## Research Questions
+
+**"Does the presence of KRAS mutations significantly impact the survival outcomes of metastatic colorectal cancer patients receiving different treatment regimens, specifically Panitumumab in combination with FOLFOX and FOLFOX alone?"**
+
+#### Statistical Experiment
+
+1. **Null Hypothesis (H0):** There is no significant difference in survival outcomes between patients with the "Mutant" and "Wild-type" KRAS genotypes, regardless of the treatment arm.
+
+2. **Alternative Hypothesis (H1):** There is a significant difference in survival outcomes between patients with the "Mutant" and "Wild-type" KRAS genotypes, and this difference is influenced by the treatment arm (Panitumumab + FOLFOX vs. FOLFOX alone).
+
+3. **Variables:**
+   - **Dependent Variable:** Time to death (Survival Time)
+   - **Independent Variable 1:** KRAS Genotype (Categorical: Mutant, Wild-type)
+   - **Independent Variable 2:** Treatment Arm (Categorical: Panitumumab + FOLFOX, FOLFOX alone)
+
+4. **Statistical Tests:**
+   - **Kaplan-Meier Survival Analysis:** To visualize and compare the survival curves for different genotypes and treatment arms.
+   - **Cox Proportional Hazards Model:** To quantify the hazard ratios and assess the impact of genotype and treatment on survival.
+
+5. **Significance Level (α):** Set a predetermined significance level (e.g., α = 0.05) to determine statistical significance.
+
+**Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?**
+
+- Null Hypothesis (H0): The combination of Genotype and Treatment Arm does not significantly impact patient survival outcomes.
+
+- Alternative Hypothesis (H1): The combination of Genotype and Treatment Arm significantly impacts patient survival outcomes.
+
+
+**Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?**
+
+- Null Hypothesis (H0): There is no significant difference in the occurrence of adverse events between treatment arms.
+
+- Alternative Hypothesis (H1): There is a significant difference in the occurrence of adverse events between treatment arms.
+
+
+**Are there significant differences in the survival distribution over time between different genotypes?**
+
+- Null Hypothesis (H0): There is no significant difference in the survival distribution over time among different genotypes.
+
+- Alternative Hypothesis (H1): There are significant differences in the survival distribution over time among different genotypes.
+
+
+**Does the treatment arm influence the survival distribution over time within each genotype?**
+
+- Null Hypothesis (H0): The treatment arm does not significantly influence the survival distribution over time within each genotype.
+
+- Alternative Hypothesis (H1): The treatment arm significantly influences the survival distribution over time within each genotype.
+
+# Data Cleaning and Exploration
+
+## Prepare Environment and Dataset
+
+```{r Setup, message=FALSE, warning=FALSE}
+library(haven)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(survival)
+library(survminer)
+
+source("get_genotype.R")
+
+trial_path = file.path("..", "Final Project", "NCT00364013")
+trial_files = list.files(trial_path, pattern = "*_pds2019.sas7bdat")
+
+dl = map(file.path(trial_path, trial_files), ~ read_sas(.x))
+names(dl) = gsub("*_pds2019.sas7bdat", "", trial_files)
+
+# Read in required data
+adae = dl$adae #contains adverse events
+adsl = dl$adsl #contains subject-level data
+biomark = dl$biomark #contains biomarkers
+
+# Select columns relevant to analysis
+filtered_biomark <- biomark %>%
+  select(c(1:7, 16:17))
+
+# Utilize our get_genotype() function on each subject ID
+filtered_biomark$Genotype <- sapply(filtered_biomark$SUBJID, get_genotype)
+
+# Create master table by joining biomarker data with treatment and death metrics
+d = left_join(filtered_biomark, 
+              adsl[, c("SUBJID", "ATRT", "DTH", "DTHDY")], 
+              by = "SUBJID")
+
+# Temp table to get unique adverse events
+adverse_events_temp <- adae |>
+  group_by(SUBJID, AEPT) |>
+  summarize(n = n())
+
+# Count the number of adverse events per subject
+adverse_events_per_subject <- adverse_events_temp |>
+  group_by(SUBJID) |>
+  summarize(adverse_events = n())
+
+# Join adverse events
+d <- d |>
+  left_join(adverse_events_per_subject, by = "SUBJID")
+
+# Replace NA adverse events with 0
+d$adverse_events <- if_else(is.na(d$adverse_events), 0, d$adverse_events)
+```
+
+
+## Visualize dataset
+
+```{r, fig.width=8, fig.height=6}
+d |> group_by(Genotype) |>
+  summarize(Count = n()) |>
+  ggplot(aes(x = Genotype, y = Count, fill = Genotype)) +
+    geom_bar(stat = "identity") +
+    labs(title = "KRAS Mutation Status", x = "Genotype", y = "Count") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
+    geom_text(aes(label = Count), vjust = -0.5)
+
+d |>
+    filter(Genotype != "Unknown") |> #ignore unknown genotypes
+    group_by(ATRT) |>
+    summarize(Count = n()) |>
+    ggplot(aes(x = ATRT, y = Count, fill = ATRT)) +
+    geom_bar(stat = "identity") +
+    labs(title = "Treatments", x = "Treatment", y = "Count") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
+    geom_text(aes(label = Count), vjust = -0.5)
+
+d |>
+    filter(Genotype != "Unknown") |> #ignore unknown genotypes
+    ggplot(aes(x = DTHDY, color = Genotype)) +
+      theme_minimal() +
+      geom_density() +
+      labs(title = "Survival Distribution Over Time", x = "Time to Death (Days)", y = "Density") +
+      theme(legend.position = "top")
+```
+
+
+### Data Cleaning and Exploration Summary
+
+1. **Loading and Organizing the Data:**
+   - Utilized the `haven` and `purrr` libraries to read SAS datasets into a list.
+   - Extracted relevant datasets, including severity code, actual treatment, confirmed responses, and biomarkers.
+
+2. **Biomarker Data Cleaning:**
+   - Selected pertinent columns for analysis from the biomarker dataset.
+   - Developed a function to determine the genotype based on biomarker information.
+   - Added a "Genotype" column to the filtered biomarker data.
+   - Provided a summary table of the distribution of genotypes.
+
+3. **Merging Datasets:**
+   - Merged relevant datasets based on the 'SUBJID' key, incorporating biomarker information with actual treatment and patient outcomes.
+
+4. **Exploratory Data Analysis (EDA):**
+   - Generated summary tables and visualizations to explore the distribution of genotypes, actual treatment, and patient outcomes.
+   - Conducted exploratory analysis on ATRT and DTH distributions within each genotype.
+
+5. **Visualization: KRAS Mutation Status:**
+   - Created a bar chart to visualize the distribution of KRAS mutation status, providing a clear overview of the dataset.
+
+6. **Kaplan-Meier Survival Analysis:**
+   - Filtered out unknown genotypes for survival analysis.
+   - Set factors and levels for genotype and actual treatment.
+   - Conducted Kaplan-Meier survival analysis to assess the impact of genotype and treatment arm on patient outcomes.
+   - Presented Kaplan-Meier survival curves for different scenarios, highlighting potential differences in survival probabilities.
+
+7. **Cox Proportional Hazards Model:**
+   - Fitted a Cox Proportional Hazards model to quantify the association between genotype and the hazard of death.
+   - Provided a summary of the model's coefficients and significance levels.
+
+# Analysis
+
+## Visualize average survival by genotype
+
+```{r, message=FALSE, fig.width=8, fig.height=6}
+source("plot_survival_days_genotype.R")
+
+plot_survival_days_genotype(d)
+```
+
+
+## Analyze whether number of survival days differed by genotype
+
+```{r}
+source("test_survival_days_genotype.R")
+
+test_survival_days_genotype(d)
+```
+
+The two-sample t-test was conducted using the test_survival_days_genotype function, comparing survival days between patients with mutant and wild-type genotypes. The results indicate a statistically significant difference in mean survival days, with patients having a mutant genotype expected to live between 48 to 146 days fewer than those with a wild-type genotype (p-value = 0.000102, 95% CI: -146.73053 to -48.55124). The mean survival days for the mutant genotype group (571.6495) are notably lower than for the wild-type group (669.2904).
+
+
+## Visualize average survival by genotype
+
+```{r, message=FALSE, fig.width=8, fig.height=6}
+source("plot_survival_days_treatment.R")
+
+plot_survival_days_treatment(d)
+```
+
+
+## Analyze whether number of survival days differed by treatment
+
+```{r, message=FALSE}
+source("test_survival_days_treatment.R")
+
+test_survival_days_treatment(d)
+```
+
+The results of the two-sample t-test indicate no statistically significant difference in mean survival days between patients receiving FOLFOX alone and those receiving Panitumumab + FOLFOX (p-value = 0.868, 95% CI: -43.27879 to 51.28986). The mean survival days for patients in the FOLFOX alone group (618.5910) are comparable to those in the Panitumumab + FOLFOX group (614.5855).
+
+
+## Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?
+
+```{r, fig.width=8, fig.height=6}
+# Filtering out unknown genotypes since these are not informative for this analysis
+dcombo <- subset(d, Genotype != "Unknown")
+
+dcombo$Genotype = factor(dcombo$Genotype, ordered = FALSE)
+dcombo$Genotype = relevel(dcombo$Genotype, ref = "Wild-type")
+
+dcombo$ATRT = factor(dcombo$ATRT, ordered = FALSE)
+dcombo$ATRT = relevel(dcombo$ATRT, ref = "FOLFOX alone")
+
+surv_plot <- ggsurvplot(
+  survfit(Surv(DTHDY, DTH) ~ Genotype + ATRT, data = dcombo),
+  data = dcombo,
+  conf.int = TRUE,
+  legend.title = "Genotype & ATRT",
+  title = "Kaplan-Meier Survival Curve by Genotype & Treatment Arm",
+  xlab = "Time in Days",
+  ylab = "Survival Probability",
+  pval = TRUE
+)
+
+surv_plot$plot + geom_hline(yintercept = 0.5, col = 'red')
+```
+
+Here we can see the following:
+
+- There are some statistically significant interactions with p < 0.0001 although it is not specified what those interactions are.
+
+- Subjects with a "Wild-type" genotype generally show higher survival rates over time. 
+
+- Subjects with a "Mutant" genotype generally show lower survival rates over time.
+
+- If a subject has the "Wild-type" genotype, they may have an improved survival rate if they receive 'Panitumumab+FOLFOX' instead of 'FOLFOX alone'
+
+- If a subject has the "Mutant" genotype, they may have an improved survival rate if they receive 'FOLFOX alone' instead of 'Panitumumab+FOLFOX'
+
+
+## Does the presence of KRAS mutations significantly impact the survival outcomes of metastatic colorectal cancer patients receiving different treatment regimens, specifically Panitumumab in combination with FOLFOX and FOLFOX alone?
+
+The Kaplan-Meier curve assesses whether there are significant differences in survival times among different genotypic groups .
+
+```{r, fig.width=8, fig.height=6}
+ggsurvplot(
+  survfit(Surv(DTHDY, DTH) ~ Genotype, data = dcombo),
+  data = dcombo,
+  conf.int = TRUE,
+  legend.title = "Genotype",
+  title = "Kaplan-Meier Survival Curve by Genotype",
+  xlab = "Time in Days",
+  ylab = "Survival Probability",
+  risk.table = TRUE
+)
+```
+
+```{r}
+summary(coxph(Surv(dcombo$DTHDY, dcombo$DTH) ~ dcombo$Genotype))
+```
+
+1. **Cox Proportional Hazards Model:**
+   - The coefficient for `dcombo$GenotypeMutant` is 0.39534, which is positive. This positive coefficient suggests that having the "Mutant" genotype is associated with a higher hazard (risk) of death compared to the "Wild-type" reference group.
+
+2. **Log-Rank Test:**
+   - The log-rank test for the "Genotype" variable has a very small p-value (p=8e-07). This suggests that there is a significant difference in survival between different genotypes.
+
+Patients with the "Mutant" genotype have a lower chance of survival compared to those with the "Wild-type" genotype, as indicated by the positive coefficient and the significant log-rank test.
+
+
+## Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?
+
+```{r, fig.width=8, fig.height=6}
+source("plot_adverse_events_genotype.R")
+
+plot_adverse_events_genotype(d)
+```
+
+```{r}
+source("test_adverse_events_genotype.R")
+
+test_adverse_events_genotype(d)
+```
+
+The two-sample t-test results suggest no statistically significant difference in the mean number of adverse events between patients with a mutant genotype and those with a wild-type genotype (p-value = 0.4311, 95% CI: -0.3479129 to 0.1486450). The mean number of adverse events for the mutant genotype group (1.507353) is comparable to that of the wild-type genotype group (1.606987).
+
+```{r, fig.width=8, fig.height=6}
+source("plot_adverse_events_treatment.R")
+
+plot_adverse_events_treatment(d)
+```
+
+```{r}
+source("test_adverse_events_treatment.R")
+
+test_adverse_events_treatment(d)
+```
+
+The two-sample t-test results indicate a highly significant difference in the mean number of adverse events between patients receiving FOLFOX alone and those receiving Panitumumab + FOLFOX (p-value < 2.2e-16, 95% CI: -2.314831 to -1.926636). The mean number of adverse events for the FOLFOX alone group (0.496788) is substantially lower than that of the Panitumumab + FOLFOX group (2.617521).
+
+**Wild-type and mutant genotypes do not have different numbers of adverse events during the trial (p>0.05). However, we did find that patients taking Folfox alone had an average of 2 fewer adverse events than patients taking both Folfox combined with Panitumumab (p<0.05).**
+
+
+# Interpretations and Conclusions
+
+ In this comprehensive analysis of the Panitumumab clinical trial data, we explored various aspects related to patient outcomes, genotype, and treatment arms. Our initial focus was on understanding the impact of genotype and treatment on patient survival. The Kaplan-Meier survival curves revealed significant differences between genotypes, with patients having a "Mutant" genotype exhibiting lower survival rates compared to those with a "Wild-type" genotype. Additionally, the Cox Proportional Hazards Model and log-rank test supported these findings, indicating that patients with the "Mutant" genotype face a higher risk of death.
+
+Further investigations delved into the association between treatment arms and survival. The survival analysis suggested that patients with a "Wild-type" genotype might experience improved survival when treated with 'Panitumumab + FOLFOX' compared to 'FOLFOX alone.' Conversely, patients with a "Mutant" genotype may fare better with 'FOLFOX alone' than 'Panitumumab + FOLFOX.' This nuanced understanding can guide personalized treatment decisions based on genotype.
+
+Exploring adverse events, we conducted t-tests to compare their occurrence based on genotype and treatment. The results indicated no significant difference in adverse events between genotypes. However, a striking difference emerged when comparing treatment arms, revealing a substantial increase in adverse events for patients receiving 'Panitumumab + FOLFOX' compared to 'FOLFOX alone.'
+
+The two-sample t-tests for survival days highlighted significant differences between genotypes. Patients with a "Mutant" genotype generally had fewer days to live than those with a "Wild-type" genotype, emphasizing the clinical relevance of genetic information in predicting outcomes.
+
+In summary, our analyses provide a multifaceted understanding of the Panitumumab clinical trial data. The results underscore the importance of considering both genotype and treatment arms in predicting patient outcomes. The observed differences in survival and adverse events support the notion that a personalized approach, tailored to individual genotypes, could enhance treatment efficacy and minimize adverse effects. Moving forward, these findings suggest the need for further exploration of genotype-specific treatment strategies and potential biomarkers to refine patient stratification and optimize therapeutic interventions.
