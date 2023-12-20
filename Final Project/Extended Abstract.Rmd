@@ -1,15 +1,20 @@
 ---
-title: "Extended Abstract"
+title: "Extended Abstract: Analysis of Panitumumab Randomized Trial"
 author: "Anmol Seth, Julia Stiller"
 date: "2023-12-19"
-output: html_document
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Spectral Signatures}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
----
-title: "Analysis of Panitumumab Randomized Trial - Background and Motivation"
-output: 
-  html_document:
-    theme: united
----
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
 
 # Background and Motivation
 
@@ -78,6 +83,94 @@ Alternative Hypothesis (H1): The treatment arm significantly influences the surv
 
 # Data Cleaning and Exploration
 
+## Prepare Environment and Dataset
+
+```{r Setup, message=FALSE, warning=FALSE}
+library(haven)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(survival)
+library(survminer)
+
+source("get_genotype.R")
+
+trial_path = file.path("..", "Final Project", "NCT00364013")
+trial_files = list.files(trial_path, pattern = "*_pds2019.sas7bdat")
+
+dl = map(file.path(trial_path, trial_files), ~ read_sas(.x))
+names(dl) = gsub("*_pds2019.sas7bdat", "", trial_files)
+
+# Read in required data
+adae = dl$adae #contains adverse events
+adsl = dl$adsl #contains subject-level data
+biomark = dl$biomark #contains biomarkers
+
+# Select columns relevant to analysis
+filtered_biomark <- biomark %>%
+  select(c(1:7, 16:17))
+
+# Utilize our get_genotype() function on each subject ID
+filtered_biomark$Genotype <- sapply(filtered_biomark$SUBJID, get_genotype)
+
+# Create master table by joining biomarker data with treatment and death metrics
+d = left_join(filtered_biomark, 
+              adsl[, c("SUBJID", "ATRT", "DTH", "DTHDY")], 
+              by = "SUBJID")
+
+# Temp table to get unique adverse events
+adverse_events_temp <- adae |>
+  group_by(SUBJID, AEPT) |>
+  summarize(n = n())
+
+# Count the number of adverse events per subject
+adverse_events_per_subject <- adverse_events_temp |>
+  group_by(SUBJID) |>
+  summarize(adverse_events = n())
+
+# Join adverse events
+d <- d |>
+  left_join(adverse_events_per_subject, by = "SUBJID")
+
+# Replace NA adverse events with 0
+d$adverse_events <- if_else(is.na(d$adverse_events), 0, d$adverse_events)
+```
+
+
+## Visualize dataset
+
+```{r}
+d |> group_by(Genotype) |>
+  summarize(Count = n()) |>
+  ggplot(aes(x = Genotype, y = Count, fill = Genotype)) +
+    geom_bar(stat = "identity") +
+    labs(title = "KRAS Mutation Status", x = "Genotype", y = "Count") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
+    geom_text(aes(label = Count), vjust = -0.5)
+
+d |>
+    filter(Genotype != "Unknown") |> #ignore unknown genotypes
+    group_by(ATRT) |>
+    summarize(Count = n()) |>
+    ggplot(aes(x = ATRT, y = Count, fill = ATRT)) +
+    geom_bar(stat = "identity") +
+    labs(title = "Treatments", x = "Treatment", y = "Count") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +  
+    geom_text(aes(label = Count), vjust = -0.5)
+
+d |>
+    filter(Genotype != "Unknown") |> #ignore unknown genotypes
+    ggplot(aes(x = DTHDY, color = Genotype)) +
+      theme_minimal() +
+      geom_density() +
+      labs(title = "Survival Distribution Over Time", x = "Time to Death (Days)", y = "Density") +
+      theme(legend.position = "top")
+```
+
+
 ### Data Cleaning and Exploration Summary
 
 1. **Loading and Organizing the Data:**
@@ -111,6 +204,144 @@ Alternative Hypothesis (H1): The treatment arm significantly influences the surv
    - Provided a summary of the model's coefficients and significance levels.
 
 # Analysis
+
+## Visualize average survival by genotype
+
+```{r, message=FALSE}
+source("plot_survival_days_genotype.R")
+
+plot_survival_days_genotype(d)
+```
+
+
+## Analyze whether number of survival days differed by genotype
+
+```{r}
+source("test_survival_days_genotype.R")
+
+test_survival_days_genotype(d)
+```
+
+Patients with a mutant genotype generally have 48 to 146 fewer days to live than those with a wild-type (p<0.05).
+
+
+## Visualize average survival by genotype
+
+```{r, message=FALSE}
+source("plot_survival_days_treatment.R")
+
+plot_survival_days_treatment(d)
+```
+
+
+## Analyze whether number of survival days differed by treatment
+
+```{r, message=FALSE}
+source("test_survival_days_treatment.R")
+
+test_survival_days_treatment(d)
+```
+
+Patients on one or both treatments do not have a different number of survival days (p>0.05).
+
+
+## Does the combination of Genotype and Treatment Arm have a significant impact on patient survival outcomes?
+
+```{r}
+# Filtering out unknown genotypes since these are not informative for this analysis
+dcombo <- subset(d, Genotype != "Unknown")
+
+dcombo$Genotype = factor(dcombo$Genotype, ordered = FALSE)
+dcombo$Genotype = relevel(dcombo$Genotype, ref = "Wild-type")
+
+dcombo$ATRT = factor(dcombo$ATRT, ordered = FALSE)
+dcombo$ATRT = relevel(dcombo$ATRT, ref = "FOLFOX alone")
+
+surv_plot <- ggsurvplot(
+  survfit(Surv(DTHDY, DTH) ~ Genotype + ATRT, data = dcombo),
+  data = dcombo,
+  conf.int = TRUE,
+  legend.title = "Genotype & ATRT",
+  title = "Kaplan-Meier Survival Curve by Genotype & Treatment Arm",
+  xlab = "Time in Days",
+  ylab = "Survival Probability",
+  pval = TRUE
+)
+
+surv_plot$plot + geom_hline(yintercept = 0.5, col = 'red')
+```
+
+Here we can see the following:
+
+- There are some statistically significant interactions with p < 0.0001 although it is not specified what those interactions are.
+
+- Subjects with a "Wild-type" genotype generally show higher survival rates over time. 
+
+- Subjects with a "Mutant" genotype generally show lower survival rates over time.
+
+- If a subject has the "Wild-type" genotype, they may have an improved survival rate if they receive 'Panitumumab+FOLFOX' instead of 'FOLFOX alone'
+
+- If a subject has the "Mutant" genotype, they may have an improved survival rate if they receive 'FOLFOX alone' instead of 'Panitumumab+FOLFOX'
+
+
+## Does the presence of KRAS mutations significantly impact the survival outcomes of metastatic colorectal cancer patients receiving different treatment regimens, specifically Panitumumab in combination with FOLFOX and FOLFOX alone?
+
+The Kaplan-Meier curve assesses whether there are significant differences in survival times among different genotypic groups .
+
+```{r}
+ggsurvplot(
+  survfit(Surv(DTHDY, DTH) ~ Genotype, data = dcombo),
+  data = dcombo,
+  conf.int = TRUE,
+  legend.title = "Genotype",
+  title = "Kaplan-Meier Survival Curve by Genotype",
+  xlab = "Time in Days",
+  ylab = "Survival Probability",
+  risk.table = TRUE
+)
+```
+
+```{r}
+summary(coxph(Surv(dcombo$DTHDY, dcombo$DTH) ~ dcombo$Genotype))
+```
+
+1. **Cox Proportional Hazards Model:**
+   - The coefficient for `dcombo$GenotypeMutant` is 0.39534, which is positive. This positive coefficient suggests that having the "Mutant" genotype is associated with a higher hazard (risk) of death compared to the "Wild-type" reference group.
+
+2. **Log-Rank Test:**
+   - The log-rank test for the "Genotype" variable has a very small p-value (p=8e-07). This suggests that there is a significant difference in survival between different genotypes.
+
+Patients with the "Mutant" genotype have a lower chance of survival compared to those with the "Wild-type" genotype, as indicated by the positive coefficient and the significant log-rank test.
+
+
+## Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?
+
+```{r}
+source("plot_adverse_events_genotype.R")
+
+plot_adverse_events_genotype(d)
+```
+
+```{r}
+source("test_adverse_events_genotype.R")
+
+test_adverse_events_genotype(d)
+```
+
+```{r}
+source("plot_adverse_events_treatment.R")
+
+plot_adverse_events_treatment(d)
+```
+
+```{r}
+source("test_adverse_events_treatment.R")
+
+test_adverse_events_treatment(d)
+```
+
+Wild-type and mutant genotypes do not have different numbers of adverse events during the trial (p>0.05). However, we did find that patients taking Folfox alone had an average of 2 fewer adverse events than patients taking both Folfox combined with Panitumumab (p<0.05).
+
 
 # Interpretations and Conclusions
 
