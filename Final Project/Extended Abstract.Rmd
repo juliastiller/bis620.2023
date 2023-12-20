@@ -43,6 +43,10 @@ Given the significance of the PRIME study, our analysis aims to further explore 
 
 **"Does the presence of KRAS mutations significantly impact the survival outcomes of metastatic colorectal cancer patients receiving different treatment regimens, specifically Panitumumab in combination with FOLFOX and FOLFOX alone?"**
 
+Additional research questions we could explore:
+- How do specific biomarkers correlate with treatment response in patients receiving Panitumumab?
+- Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?
+
 ## Statistical Experiment
 
 1. **Null Hypothesis (H0):** There is no significant difference in survival outcomes between patients with the "Mutant" and "Wild-type" KRAS genotypes, regardless of the treatment arm.

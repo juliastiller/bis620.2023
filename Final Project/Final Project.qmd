@@ -161,3 +161,42 @@ summary(coxph(Surv(d$DTHDY, d$DTH) ~ d$Genotype))
    - The log-rank test for the "Genotype" variable has a very small p-value (p=8e-07). This suggests that there is a significant difference in survival between different genotypes.
 
 Patients with the "Mutant" genotype have a lower chance of survival compared to those with the "Wild-type" genotype, as indicated by the positive coefficient and the significant log-rank test.
+
+-----------------------
+Exploratory code for suggested further analysis 
+
+- Are there differences in the occurrence of adverse events between patients receiving Panitumumab in combination with FOLFOX and those receiving FOLFOX alone?
+
+```{r}
+# Example code
+adverse_events <- d %>%
+  group_by(ATRT) %>%
+  # NOTE: Not sure if this should be 1 or 0
+  summarize(AdverseEventRate = mean(DTH == "1", na.rm = TRUE))
+
+ggplot(adverse_events, aes(x = ATRT, y = AdverseEventRate, fill = ATRT)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Adverse Events by Treatment Arm", x = "Treatment Arm", y = "Adverse Event Rate") +
+  theme_minimal()
+
+```
+
+```{r}
+# Load necessary libraries if not already loaded
+library(ggplot2)
+library(survival)
+library(survminer)
+
+# Assuming d is your dataset
+ggplot(d, aes(x = DTHDY, color = Genotype)) +
+  theme_minimal() +
+  geom_density() +
+  labs(title = "Survival Distribution Over Time", x = "Time to Death (Days)", y = "Density") +
+  theme(legend.position = "top")
+
+```
+
+
+
+
+
